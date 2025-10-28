@@ -12,9 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NetWork">
         <activity
-            android:name=".Temp"
-            android:exported="false" />
-        <activity
             android:name=".SplashActivity"
             android:exported="true"
             android:label="@string/app_name"
