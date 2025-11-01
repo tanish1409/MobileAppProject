@@ -7,15 +7,17 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:src="@drawable/ic_launcher_foreground"
+        android:src="@drawable/logo"
         android:layout_width="120dp"
         android:layout_height="120dp" />
 
     <TextView
-        android:text="NetWork"
-        android:textSize="28sp"
-        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:textColor="@color/black" android:layout_height="50px" android:layout_width="50px"/>
+        android:text="NetWork"
+        android:textColor="@color/black"
+        android:textSize="38sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

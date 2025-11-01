@@ -12,7 +12,7 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
         // -- USERS TABLE
         db.execSQL(
             """
-                CREATE TABLE Users (
+                CREATE TABLE IF NOT EXISTS Users (
                     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     email TEXT UNIQUE NOT NULL,
@@ -27,7 +27,7 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
         // -- FRIENDS TABLE
         db.execSQL(
             """
-                CREATE TABLE Friends (
+                CREATE TABLE IF NOT EXISTS Friends (
                     user_id INTEGER NOT NULL,
                     friend_id INTEGER NOT NULL,
                     status TEXT CHECK(status IN ('pending', 'accepted', 'blocked')),
@@ -41,7 +41,7 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
         // -- CLUBS TABLE
         db.execSQL(
             """
-                CREATE TABLE Clubs (
+                CREATE TABLE IF NOT EXISTS Clubs (
                     club_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     description TEXT,
@@ -57,7 +57,7 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
         // -- EVENTS TABLE
         db.execSQL(
             """
-                CREATE TABLE Events (
+                CREATE TABLE IF NOT EXISTS Events (
                     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     club_id INTEGER,
                     host_id INTEGER,
@@ -77,7 +77,7 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
         // -- EVENT_ATTENDANCE TABLE
         db.execSQL(
             """
-                CREATE TABLE Event_Attendance (
+                CREATE TABLE IF NOT EXISTS Event_Attendance (
                     event_id INTEGER,
                     user_id INTEGER,
                     status TEXT CHECK(status IN ('joined', 'interested', 'completed')),
@@ -91,7 +91,7 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
         // -- REVIEWS TABLE
         db.execSQL(
             """
-                CREATE TABLE Reviews (
+                CREATE TABLE IF NOT EXISTS Reviews (
                     review_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     club_id INTEGER,
                     user_id INTEGER,
@@ -108,7 +108,7 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
         // -- MEDIA TABLE
         db.execSQL(
             """
-                CREATE TABLE Media (
+                CREATE TABLE IF NOT EXISTS Media (
                     media_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER,
                     event_id INTEGER,
