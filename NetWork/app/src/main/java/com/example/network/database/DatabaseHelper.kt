@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class DatabaseHelper (context: Context) : SQLiteOpenHelper(
-    context, "NetWork.db", null, 1
+    context, "NetWork.db", null, 2
 ){
     override fun onCreate(db: SQLiteDatabase) {
 
@@ -19,7 +19,8 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
                     password_hash TEXT NOT NULL,
                     bio TEXT,
                     location TEXT,
-                    preferences TEXT
+                    preferences TEXT,
+                    profile_image_path TEXT
             )
             """
         )
@@ -124,8 +125,17 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        when (oldVersion) {
+            1 -> {
+                // Upgrade from version 1 to 2
+                // Example: Add a new column to an existing table
+                db.execSQL("ALTER TABLE Users ADD COLUMN profile_image_path TEXT")
+                // If you added a new table in version 2, make sure it is created here too.
+                // Example: db.execSQL(CREATE_TABLE_NEW_TABLE)
+
+                // FALL-THROUGH to the next version's upgrade code to ensure
+                // users upgrading from version 1 to a version > 2 get all updates
+            }
+        }
     }
-
-
-
 }

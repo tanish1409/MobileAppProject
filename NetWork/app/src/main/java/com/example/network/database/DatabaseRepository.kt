@@ -394,6 +394,61 @@ class DatabaseRepository(context: Context) {
         }
     }
 
+    /**
+     * Add review with media attachment
+     * This method adds the review AND saves media to Media table if provided
+     */
+    fun addReviewWithMedia(
+        clubId: Int,
+        userId: Int,
+        rating: Int,
+        text: String?,
+        mediaPath: String?,
+        mediaType: String?
+    ): Long {
+        // First add the review
+        val reviewId = addReview(clubId, userId, rating, text, mediaPath)
+
+        // If media is attached and review was successful, also save to Media table
+        if (reviewId > 0 && mediaPath != null && mediaType != null) {
+            saveMedia(userId, null, mediaType, mediaPath)
+        }
+
+        return reviewId
+    }
+
+    /**
+     * Get reviews with user profile images
+     * Returns reviews with additional user profile image path
+     */
+    fun getReviewsWithUserImages(clubId: Int): List<Map<String, Any?>> {
+        val reviews = mutableListOf<Map<String, Any?>>()
+        val cursor = db.rawQuery("""
+            SELECT r.*, u.name as user_name, u.profile_image_path
+            FROM Reviews r
+            INNER JOIN Users u ON r.user_id = u.user_id
+            WHERE r.club_id = ?
+            ORDER BY r.timestamp DESC
+        """, arrayOf(clubId.toString()))
+
+        while (cursor.moveToNext()) {
+            val reviewMap = mapOf(
+                "review_id" to cursor.getInt(cursor.getColumnIndexOrThrow("review_id")),
+                "club_id" to cursor.getInt(cursor.getColumnIndexOrThrow("club_id")),
+                "user_id" to cursor.getInt(cursor.getColumnIndexOrThrow("user_id")),
+                "user_name" to cursor.getString(cursor.getColumnIndexOrThrow("user_name")),
+                "profile_image_path" to cursor.getString(cursor.getColumnIndexOrThrow("profile_image_path")),
+                "rating" to cursor.getInt(cursor.getColumnIndexOrThrow("rating")),
+                "text" to cursor.getString(cursor.getColumnIndexOrThrow("text")),
+                "media_url" to cursor.getString(cursor.getColumnIndexOrThrow("media_url")),
+                "timestamp" to cursor.getLong(cursor.getColumnIndexOrThrow("timestamp"))
+            )
+            reviews.add(reviewMap)
+        }
+        cursor.close()
+        return reviews
+    }
+
     // ============================================
     // FRIEND OPERATIONS
     // ============================================
@@ -499,6 +554,93 @@ class DatabaseRepository(context: Context) {
         cursor.close()
         return mediaList
     }
+
+    //Convenience method to save audio media
+    fun saveAudioMedia(userId: Int, eventId: Int?, audioPath: String): Long {
+        return saveMedia(userId, eventId, "audio", audioPath)
+    }
+
+    //Save media with video type
+    fun saveVideoMedia(userId: Int, eventId: Int?, videoPath: String, thumbnailPath: String?): Long {
+        val values = ContentValues().apply {
+            put("user_id", userId)
+            put("event_id", eventId)
+            put("type", "video")
+            put("url", videoPath)
+            put("thumbnail", thumbnailPath)
+        }
+        return db.insert("Media", null, values)
+    }
+
+    //Get all media by user
+    fun getMediaByUser(userId: Int): List<Media> {
+        val mediaList = mutableListOf<Media>()
+        val cursor = db.query(
+            "Media",
+            null,
+            "user_id = ?",
+            arrayOf(userId.toString()),
+            null, null, "timestamp DESC"
+        )
+
+        while (cursor.moveToNext()) {
+            mediaList.add(cursorToMedia(cursor))
+        }
+        cursor.close()
+        return mediaList
+    }
+
+    //Delete media by ID
+    fun deleteMedia(mediaId: Int): Boolean {
+        return db.delete("Media", "media_id = ?", arrayOf(mediaId.toString())) > 0
+    }
+
+    //Get media by type (photo, video, audio)
+    fun getMediaByType(type: String): List<Media> {
+        val mediaList = mutableListOf<Media>()
+        val cursor = db.query(
+            "Media",
+            null,
+            "type = ?",
+            arrayOf(type),
+            null, null, "timestamp DESC"
+        )
+
+        while (cursor.moveToNext()) {
+            mediaList.add(cursorToMedia(cursor))
+        }
+        cursor.close()
+        return mediaList
+    }
+
+    //Update user's profile image path
+    fun updateUserProfileImage(userId: Int, imagePath: String): Boolean {
+        val values = ContentValues().apply {
+            put("profile_image_path", imagePath)
+        }
+        return db.update("Users", values, "user_id = ?", arrayOf(userId.toString())) > 0
+    }
+
+    //Get user's profile image path
+    fun getUserProfileImage(userId: Int): String? {
+        val cursor = db.query(
+            "Users",
+            arrayOf("profile_image_path"),
+            "user_id = ?",
+            arrayOf(userId.toString()),
+            null, null, null
+        )
+
+        return if (cursor.moveToFirst()) {
+            val path = cursor.getString(0)
+            cursor.close()
+            path
+        } else {
+            cursor.close()
+            null
+        }
+    }
+
 
     // ============================================
     // HELPER METHODS
