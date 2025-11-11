@@ -112,6 +112,36 @@ class DatabaseRepository(context: Context) {
         return users
     }
 
+    fun getUserClubCount(userId: Int): Int {
+        val cursor = db.rawQuery(
+            """
+            SELECT COUNT(*) 
+            FROM Clubs 
+            WHERE owner_id = ?
+            """.trimIndent(),
+            arrayOf(userId.toString())
+        )
+
+        val count = if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        cursor.close()
+        return count
+    }
+
+    fun getUserEventCount(userId: Int): Int {
+        val cursor = db.rawQuery(
+            """
+            SELECT COUNT(*) 
+            FROM Event_Attendance 
+            WHERE user_id = ?
+            """.trimIndent(),
+            arrayOf(userId.toString())
+        )
+
+        val count = if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        cursor.close()
+        return count
+    }
+
     // ============================================
     // CLUB OPERATIONS
     // ============================================
