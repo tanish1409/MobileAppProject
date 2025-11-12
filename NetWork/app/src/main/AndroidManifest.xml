@@ -31,6 +31,10 @@
         <activity android:name=".HomeActivity" />
         <activity android:name=".ClubListActivity" />
         <activity android:name=".ClubDetailsActivity" />
+        <activity
+            android:name=".EditProfileActivity"
+            android:label="Edit Profile"
+            android:parentActivityName=".ProfileActivity" />
         <activity android:name=".ProfileActivity" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"

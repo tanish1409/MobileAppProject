@@ -24,12 +24,14 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var clubsCount: TextView
     private lateinit var eventsCount: TextView
 
+    private var userId: Int = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
         sessionManager = SessionManager(this)
-        val userId = sessionManager.getUserId()
+        userId = sessionManager.getUserId()
         if (userId == -1) {
             navigateToLogin()
             return
@@ -39,6 +41,14 @@ class ProfileActivity : AppCompatActivity() {
         bindViews()
         setupClickListeners()
         loadUserProfile(userId)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reload profile data when returning from EditProfileActivity
+        if (userId != -1) {
+            loadUserProfile(userId)
+        }
     }
 
     private fun bindViews() {
@@ -62,7 +72,8 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.editProfileBtn).setOnClickListener {
-            Toast.makeText(this, "Edit profile coming soon!", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, EditProfileActivity::class.java)
+            startActivity(intent)
         }
     }
 
