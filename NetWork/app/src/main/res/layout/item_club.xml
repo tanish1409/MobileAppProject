@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/card_bg"
+    android:elevation="4dp"
+    android:layout_marginBottom="12dp">
+
+    <TextView
+        android:id="@+id/clubName"
+        android:text="Club Name"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/clubSport"
+        android:text="Sport Type"
+        android:textSize="14sp"
+        android:textColor="#757575"
+        android:layout_marginTop="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/clubDescription"
+        android:text="Short description..."
+        android:textSize="14sp"
+        android:layout_marginTop="6dp"
+        android:textColor="#424242"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

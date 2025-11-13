@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <external-files-path
+        name="club_media"
+        path="club_media/" />
+
     <external-files-path
         name="profile_images"
         path="profile_images/" />
-    <files-path
-        name="internal_profile_images"
-        path="profile_images/" />
+
+    <external-path
+        name="pictures"
+        path="Pictures/" />
+
+    <external-path
+        name="movies"
+        path="Movies/" />
+
 </paths>

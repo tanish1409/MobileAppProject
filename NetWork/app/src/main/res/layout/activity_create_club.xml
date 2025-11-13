@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/createClubScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Club Name -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Club Name">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/clubNameField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Description -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Description">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/clubDescriptionField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="3"
+                android:gravity="top" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Spinner -->
+        <Spinner
+            android:id="@+id/sportTypeSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" />
+
+        <!-- Choose Location Button -->
+        <Button
+            android:id="@+id/chooseLocationBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose Location"
+            android:layout_marginTop="20dp" />
+
+        <!-- Media section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Multimedia"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:useDefaultMargins="true">
+
+            <Button
+                android:id="@+id/uploadImageBtn"
+                android:text="Upload Image"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"/>
+
+            <Button
+                android:id="@+id/captureImageBtn"
+                android:text="Capture Image"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"/>
+
+            <Button
+                android:id="@+id/uploadVideoBtn"
+                android:text="Upload Video"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"/>
+
+            <Button
+                android:id="@+id/captureVideoBtn"
+                android:text="Capture Video"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"/>
+        </GridLayout>
+
+        <!-- Preview Row -->
+        <LinearLayout
+            android:id="@+id/mediaPreviewRow"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"/>
+
+        <Button
+            android:id="@+id/createClubBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create Club"
+            android:layout_marginTop="30dp"/>
+
+        <Button
+            android:id="@+id/cancelBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:layout_marginTop="12dp"/>
+    </LinearLayout>
+
+</ScrollView>
