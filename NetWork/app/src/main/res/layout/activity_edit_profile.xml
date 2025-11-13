@@ -13,17 +13,40 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal">
 
-        <!-- Profile Picture -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/profileImage"
-            android:layout_width="140dp"
-            android:layout_height="140dp"
-            android:layout_marginTop="16dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_profile_placeholder"
-            app:shapeAppearanceOverlay="@style/CircleImageStyle"
-            android:contentDescription="Profile Picture"
-            android:elevation="6dp"/>
+        <!-- Profile Picture Container with Camera Button -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
+
+            <!-- Profile Picture -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profileImage"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_profile_placeholder"
+                app:shapeAppearanceOverlay="@style/CircleImageStyle"
+                android:contentDescription="Profile Picture"
+                android:elevation="6dp"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <!-- Camera Button Overlay -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/changePhotoBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="4dp"
+                app:fabSize="mini"
+                app:backgroundTint="#6200EE"
+                app:tint="#FFFFFF"
+                android:src="@android:drawable/ic_menu_camera"
+                android:contentDescription="Change Photo"
+                app:elevation="8dp"/>
+        </FrameLayout>
 
         <!-- Header -->
         <TextView
@@ -34,6 +57,14 @@
             android:textStyle="bold"
             android:textColor="#212121"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tap the camera icon to change photo"
+            android:textSize="12sp"
+            android:textColor="#757575"
             android:layout_marginBottom="24dp"/>
 
         <!-- Info Card -->
