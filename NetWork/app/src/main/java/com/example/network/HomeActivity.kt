@@ -23,6 +23,9 @@ import com.example.network.model.Club
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.widget.ImageButton
+
 
 
 
@@ -42,16 +45,26 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        // Button listeners
-        val viewClubsBtn = findViewById<Button>(R.id.viewClubsBtn)
-        viewClubsBtn.setOnClickListener {
+        val fabClubs = findViewById<FloatingActionButton>(R.id.fabClubs)
+        fabClubs.setOnClickListener {
             startActivity(Intent(this, ClubListActivity::class.java))
         }
 
-        val viewProfileBtn = findViewById<Button>(R.id.viewProfileBtn)
-        viewProfileBtn.setOnClickListener {
+        val fabProfile = findViewById<FloatingActionButton>(R.id.fabProfile)
+        fabProfile.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+
+        val zoomIn = findViewById<ImageButton>(R.id.zoomInBtn)
+        zoomIn.setOnClickListener {
+            mMap.animateCamera(CameraUpdateFactory.zoomIn())
+        }
+
+        val zoomOut = findViewById<ImageButton>(R.id.zoomOutBtn)
+        zoomOut.setOnClickListener {
+            mMap.animateCamera(CameraUpdateFactory.zoomOut())
+        }
+
 
         val chipGroup = findViewById<ChipGroup>(R.id.sportChipGroup)
 
@@ -172,8 +185,11 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         setCustomInfoWindow()
 
         // Enable zoom controls
-        mMap.uiSettings.isZoomControlsEnabled = true
-        mMap.uiSettings.isCompassEnabled = true
+        mMap.uiSettings.isZoomControlsEnabled = false
+        mMap.uiSettings.isCompassEnabled = false
+        mMap.uiSettings.isMyLocationButtonEnabled = false
+        mMap.uiSettings.isMapToolbarEnabled = false
+
 
     }
 
