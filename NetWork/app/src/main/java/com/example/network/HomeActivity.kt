@@ -21,6 +21,8 @@ import com.google.android.gms.maps.model.Marker
 import com.example.network.database.DatabaseRepository
 import com.example.network.model.Club
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 
 
 
@@ -28,6 +30,8 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
+    private var selectedSport: String = "All"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +52,21 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         viewProfileBtn.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+
+        val chipGroup = findViewById<ChipGroup>(R.id.sportChipGroup)
+
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (checkedIds.isNotEmpty() && ::mMap.isInitialized) {
+                val chipId = checkedIds[0]
+                val chip = findViewById<Chip>(chipId)
+                selectedSport = chip.text.toString()
+
+                mMap.clear()
+                loadClubMarkers(mMap)
+            }
+        }
+
+
     }
 
     override fun onResume() {
@@ -61,9 +80,15 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun loadClubMarkers(googleMap: GoogleMap) {
         val repo = DatabaseRepository(this)
-        val clubs = repo.getAllClubs()
+        val allClubs = repo.getAllClubs()
 
-        // Add markers
+        // Apply filter
+        val clubs = if (selectedSport == "All") {
+            allClubs
+        } else {
+            allClubs.filter { it.sportType.equals(selectedSport, ignoreCase = true) }
+        }
+
         clubs.forEach { club ->
             val position = LatLng(club.locationLat, club.locationLong)
 
@@ -77,9 +102,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             marker?.tag = club.clubId
         }
 
-        // Zoom to fit all pins
         zoomToFitAllMarkers(clubs)
     }
+
 
 
     private fun setupMarkerClickListeners() {
@@ -137,19 +162,6 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         // Set default location (Toronto, based on your location)
         val toronto = LatLng(43.6532, -79.3832)
 
-        // Add sample club markers (replace with your actual club data)
-        mMap.addMarker(MarkerOptions()
-            .position(toronto)
-            .title("Sample Club")
-            .snippet("Click for details"))
-
-        // Move camera to Toronto
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(toronto, 12f))
-
-        // Enable zoom controls
-        mMap.uiSettings.isZoomControlsEnabled = true
-        mMap.uiSettings.isCompassEnabled = true
-
         // Check and request location permission
         enableMyLocation()
 
@@ -158,6 +170,10 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         setupMarkerClickListeners()
 
         setCustomInfoWindow()
+
+        // Enable zoom controls
+        mMap.uiSettings.isZoomControlsEnabled = true
+        mMap.uiSettings.isCompassEnabled = true
 
     }
 
