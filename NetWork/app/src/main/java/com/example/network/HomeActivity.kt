@@ -15,6 +15,14 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import android.view.View
+import android.widget.TextView
+import com.google.android.gms.maps.model.Marker
+import com.example.network.database.DatabaseRepository
+import com.example.network.model.Club
+import com.google.android.gms.maps.model.LatLngBounds
+
+
 
 class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -42,6 +50,87 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::mMap.isInitialized) {
+            mMap.clear()
+            loadClubMarkers(mMap)
+        }
+    }
+
+
+    private fun loadClubMarkers(googleMap: GoogleMap) {
+        val repo = DatabaseRepository(this)
+        val clubs = repo.getAllClubs()
+
+        // Add markers
+        clubs.forEach { club ->
+            val position = LatLng(club.locationLat, club.locationLong)
+
+            val marker = googleMap.addMarker(
+                MarkerOptions()
+                    .position(position)
+                    .title(club.name)
+                    .snippet("Tap for details")
+            )
+
+            marker?.tag = club.clubId
+        }
+
+        // Zoom to fit all pins
+        zoomToFitAllMarkers(clubs)
+    }
+
+
+    private fun setupMarkerClickListeners() {
+        mMap.setOnInfoWindowClickListener { marker ->
+            val clubId = marker.tag as? Int
+            if (clubId != null) {
+                val intent = Intent(this, ClubDetailsActivity::class.java)
+                intent.putExtra("club_id", clubId)
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun setCustomInfoWindow() {
+        mMap.setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter {
+            override fun getInfoWindow(marker: Marker): View? {
+                return null // Use default background frame
+            }
+
+            override fun getInfoContents(marker: Marker): View {
+                val view = layoutInflater.inflate(R.layout.custom_info_window, null)
+
+                val title = view.findViewById<TextView>(R.id.title)
+                val snippet = view.findViewById<TextView>(R.id.snippet)
+
+                title.text = marker.title
+                snippet.text = "Tap for club details"
+
+                return view
+            }
+        })
+    }
+
+    private fun zoomToFitAllMarkers(clubs: List<Club>) {
+        if (clubs.isEmpty()) return
+
+        val boundsBuilder = LatLngBounds.Builder()
+
+        clubs.forEach { club ->
+            val position = LatLng(club.locationLat, club.locationLong)
+            boundsBuilder.include(position)
+        }
+
+        val bounds = boundsBuilder.build()
+
+        // Animate camera to fit all markers with padding
+        val padding = 150 // px
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+    }
+
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
@@ -63,6 +152,13 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Check and request location permission
         enableMyLocation()
+
+        loadClubMarkers(mMap)
+
+        setupMarkerClickListeners()
+
+        setCustomInfoWindow()
+
     }
 
     private fun enableMyLocation() {
