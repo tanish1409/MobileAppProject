@@ -51,11 +51,27 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_cricket"
+                android:id="@+id/chip_tennis"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cricket"
+                android:text="Tennis"
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_badminton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Badminton"
+                style="@style/Widget.MaterialComponents.Chip.Filter" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_running"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Running"
+                style="@style/Widget.MaterialComponents.Chip.Filter" />
+
+
         </com.google.android.material.chip.ChipGroup>
 
     </HorizontalScrollView>

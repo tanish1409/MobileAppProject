@@ -25,6 +25,10 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.ImageButton
+import android.graphics.BitmapFactory
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+
 
 
 
@@ -96,20 +100,27 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         val allClubs = repo.getAllClubs()
 
         // Apply filter
-        val clubs = if (selectedSport == "All") {
+        val clubs = if (selectedSport.equals("All", ignoreCase = true)) {
             allClubs
         } else {
-            allClubs.filter { it.sportType.equals(selectedSport, ignoreCase = true) }
+            val target = selectedSport.trim().lowercase()
+
+            allClubs.filter { club ->
+                club.sportType.trim().lowercase() == target
+            }
         }
+
 
         clubs.forEach { club ->
             val position = LatLng(club.locationLat, club.locationLong)
 
+            val iconRes = getIconForSport(club.sportType)
             val marker = googleMap.addMarker(
                 MarkerOptions()
                     .position(position)
                     .title(club.name)
                     .snippet("Tap for details")
+                    .icon(getMarkerIcon(iconRes))
             )
 
             marker?.tag = club.clubId
@@ -130,6 +141,26 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+
+    private fun getMarkerIcon(resourceId: Int): BitmapDescriptor {
+        val bitmap = BitmapFactory.decodeResource(resources, resourceId)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    private fun getIconForSport(sport: String): Int {
+        return when (sport.lowercase()) {
+            "basketball" -> R.drawable.marker_basketball
+            "soccer" -> R.drawable.marker_soccer
+            "volleyball" -> R.drawable.marker_volleyball
+            // New sports – temporarily point to default or reuse something
+            "tennis" -> R.drawable.marker_default   // TODO: replace with marker_tennis
+            "running" -> R.drawable.marker_default  // TODO: replace with marker_running
+            "badminton" -> R.drawable.marker_default // TODO: replace with marker_badminton
+            else -> R.drawable.marker_default // optional fallback
+        }
+    }
+
+
 
     private fun setCustomInfoWindow() {
         mMap.setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter {
