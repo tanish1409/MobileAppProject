@@ -152,15 +152,13 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             "basketball" -> R.drawable.marker_basketball
             "soccer" -> R.drawable.marker_soccer
             "volleyball" -> R.drawable.marker_volleyball
-            // New sports – temporarily point to default or reuse something
+            // New sports
             "tennis" -> R.drawable.marker_tennis
             "running" -> R.drawable.marker_running
             "badminton" -> R.drawable.marker_badminton
-            else -> R.drawable.marker_default // optional fallback
+            else -> R.drawable.marker_default // fallback
         }
     }
-
-
 
     private fun setCustomInfoWindow() {
         mMap.setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter {
@@ -220,8 +218,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.uiSettings.isCompassEnabled = false
         mMap.uiSettings.isMyLocationButtonEnabled = false
         mMap.uiSettings.isMapToolbarEnabled = false
-
-
+        
     }
 
     private fun enableMyLocation() {
