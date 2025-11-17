@@ -153,9 +153,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             "soccer" -> R.drawable.marker_soccer
             "volleyball" -> R.drawable.marker_volleyball
             // New sports – temporarily point to default or reuse something
-            "tennis" -> R.drawable.marker_default   // TODO: replace with marker_tennis
-            "running" -> R.drawable.marker_default  // TODO: replace with marker_running
-            "badminton" -> R.drawable.marker_default // TODO: replace with marker_badminton
+            "tennis" -> R.drawable.marker_tennis
+            "running" -> R.drawable.marker_running
+            "badminton" -> R.drawable.marker_badminton
             else -> R.drawable.marker_default // optional fallback
         }
     }
