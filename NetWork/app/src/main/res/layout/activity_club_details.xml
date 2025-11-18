@@ -1,150 +1,177 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    tools:context=".ClubDetailsActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <!-- This ScrollView contains everything EXCEPT the reviews -->
+    <ScrollView
+        android:id="@+id/mainContentScrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/reviewsTitle">
 
-        <!-- Header -->
-        <TextView
-            android:id="@+id/clubNameText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Club Name"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/clubSportText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sport Type"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp" />
-
-        <!-- Map -->
-        <fragment
-            android:id="@+id/clubDetailsMap"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="12dp" />
-
-        <!-- Info card -->
         <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/card_bg">
+            android:padding="16dp">
 
+            <!-- Header -->
             <TextView
-                android:text="Description"
+                android:id="@+id/clubNameText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Club Name"
+                android:textSize="24sp"
                 android:textStyle="bold" />
-
             <TextView
-                android:id="@+id/clubDescriptionText"
+                android:id="@+id/clubSportText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Club description here" />
+                android:text="Sport Type"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
 
+            <!-- Map -->
+            <fragment
+                android:id="@+id/clubDetailsMap"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="12dp" />
+
+            <!-- Info card -->
             <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/card_bg">
+                <TextView
+                    android:text="Description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/clubDescriptionText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Club description here" />
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+                    <TextView
+                        android:text="Rating: "
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/clubRatingText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.0" />
+                    <TextView
+                        android:text="   Members: "
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp" />
+                    <TextView
+                        android:id="@+id/clubMembersText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- START: Added Media Section -->
+            <TextView
+                android:id="@+id/mediaTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Media"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                tools:visibility="visible"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mediaRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_media_simple" />
+            <!-- END: Added Media Section -->
+
+            <!-- Buttons -->
+            <LinearLayout
+                android:id="@+id/actionButtonsLayout"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp">
-
-                <TextView
-                    android:text="Rating: "
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/clubRatingText"
-                    android:layout_width="wrap_content"
+                android:layout_marginTop="16dp">
+                <Button
+                    android:id="@+id/joinClubBtn"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="0.0" />
-
-                <TextView
-                    android:text="   Members: "
-                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Join Club" />
+                <Button
+                    android:id="@+id/addReviewBtn"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Add Review"
                     android:layout_marginStart="8dp" />
-
-                <TextView
-                    android:id="@+id/clubMembersText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0" />
             </LinearLayout>
-        </LinearLayout>
-
-        <!-- Multimedia -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Multimedia"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/mediaRecycler"
-            android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:layout_marginTop="8dp" />
-
-        <!-- Reviews -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reviews"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/reviewsRecycler"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
-
-        <!-- Buttons -->
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
 
             <Button
-                android:id="@+id/joinClubBtn"
-                android:layout_width="0dp"
+                android:id="@+id/backBtn"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Join Club" />
+                android:text="Back"
+                android:layout_marginTop="12dp" />
 
-            <Button
-                android:id="@+id/addReviewBtn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Add Review"
-                android:layout_marginStart="8dp" />
         </LinearLayout>
+    </ScrollView>
 
-        <Button
-            android:id="@+id/backBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Back"
-            android:layout_marginTop="12dp" />
+    <!-- Reviews Section (Now at the bottom) -->
+    <TextView
+        android:id="@+id/reviewsTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Reviews"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/reviewsRecycler"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/reviewsRecycler"
+        android:layout_width="0dp"
+        android:layout_height="180dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_review" />
 
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

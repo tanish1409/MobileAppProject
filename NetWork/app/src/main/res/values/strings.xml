@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">NetWork</string>
     <string name="google_maps_key">AIzaSyD9Cn3vAe3_1ZoBK_SWTFxdwogZTiJG3SA</string>
+    <string name="review_media_image">Image or video attached to the review</string>
 </resources>

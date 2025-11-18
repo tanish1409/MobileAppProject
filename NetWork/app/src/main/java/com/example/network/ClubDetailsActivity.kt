@@ -1,17 +1,18 @@
 package com.example.network
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.network.adapters.MediaAdapter
 import com.example.network.ReviewAdapter
 import com.example.network.database.DatabaseRepository
 import com.example.network.model.Club
-import com.example.network.model.Media
 import com.example.network.model.Review
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -32,10 +33,16 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var clubMembersText: TextView
 
     private lateinit var reviewsRecycler: RecyclerView
-    private lateinit var mediaRecycler: RecyclerView
 
     private var mMap: GoogleMap? = null
     private var clubLocation: LatLng? = null
+
+    private val addReviewLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            Toast.makeText(this, "Refreshing reviews...", Toast.LENGTH_SHORT).show()
+            loadClubData()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +74,9 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         findViewById<Button>(R.id.addReviewBtn).setOnClickListener {
-            Toast.makeText(this, "Add Review coming soon", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, AddReviewActivity::class.java)
+            intent.putExtra("club_id", clubId)
+            addReviewLauncher.launch(intent)
         }
     }
 
@@ -79,18 +88,13 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         clubMembersText = findViewById(R.id.clubMembersText)
 
         reviewsRecycler = findViewById(R.id.reviewsRecycler)
-        mediaRecycler = findViewById(R.id.mediaRecycler)
-
         reviewsRecycler.layoutManager = LinearLayoutManager(this)
-        mediaRecycler.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     }
 
     private fun loadClubData() {
         Thread {
             val club: Club? = repository.getClubById(clubId)
             val reviews: List<Review> = repository.getReviewsByClub(clubId)
-            val mediaList: List<Media> = repository.getMediaByEvent(clubId)
 
             runOnUiThread {
                 if (club == null) {
@@ -102,14 +106,13 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 clubNameText.text = club.name
                 clubSportText.text = club.sportType
                 clubDescriptionText.text = club.description ?: "No description"
-                clubRatingText.text = String.format("%.1f", club.rating)
+                clubRatingText.text = if (club.rating > 0) String.format("%.1f", club.rating) else "N/A"
                 clubMembersText.text = club.memberCount.toString()
 
                 clubLocation = LatLng(club.locationLat, club.locationLong)
                 updateMapLocation()
 
                 reviewsRecycler.adapter = ReviewAdapter(reviews)
-                mediaRecycler.adapter = MediaAdapter(mediaList)
             }
         }.start()
     }
