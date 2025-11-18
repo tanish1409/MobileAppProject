@@ -671,6 +671,25 @@ class DatabaseRepository(context: Context) {
         }
     }
 
+    // WARNING: This function exploits the temporary data integrity flaw where
+    // clubId was incorrectly saved into the event_id column of the Media table.
+    fun getClubMediaWorkaround(clubId: Int): List<Media> {
+        val mediaList = mutableListOf<Media>()
+        val cursor = db.query(
+            "Media",
+            null,
+            "event_id = ?", // Querying on event_id, which currently holds the clubId
+            arrayOf(clubId.toString()),
+            null, null, "timestamp DESC"
+        )
+
+        while (cursor.moveToNext()) {
+            mediaList.add(cursorToMedia(cursor))
+        }
+        cursor.close()
+        return mediaList
+    }
+
 
     // ============================================
     // HELPER METHODS

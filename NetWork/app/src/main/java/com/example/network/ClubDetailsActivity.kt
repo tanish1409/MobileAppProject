@@ -20,6 +20,10 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import android.view.View
+import android.widget.LinearLayout
+import com.example.network.adapters.MediaAdapter
+import com.example.network.model.Media
 
 class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -36,6 +40,10 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var mMap: GoogleMap? = null
     private var clubLocation: LatLng? = null
+
+    private lateinit var mediaRecycler: RecyclerView
+    private lateinit var mediaTitle: TextView
+    private lateinit var mediaSectionContainer: LinearLayout
 
     private val addReviewLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -89,12 +97,18 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         reviewsRecycler = findViewById(R.id.reviewsRecycler)
         reviewsRecycler.layoutManager = LinearLayoutManager(this)
+
+        mediaRecycler = findViewById(R.id.mediaRecycler)
+        mediaRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        mediaTitle = findViewById(R.id.mediaTitle)
+        mediaSectionContainer = findViewById(R.id.mediaSectionContainer)
     }
 
     private fun loadClubData() {
         Thread {
             val club: Club? = repository.getClubById(clubId)
             val reviews: List<Review> = repository.getReviewsByClub(clubId)
+            val mediaList: List<Media> = repository.getClubMediaWorkaround(clubId)
 
             runOnUiThread {
                 if (club == null) {
@@ -113,6 +127,15 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 updateMapLocation()
 
                 reviewsRecycler.adapter = ReviewAdapter(reviews)
+
+                if (mediaList.isNotEmpty()) {
+                    mediaRecycler.adapter = MediaAdapter(mediaList)
+                    // Only set container VISIBLE
+                    mediaSectionContainer.visibility = View.VISIBLE
+                } else {
+                    // Set container GONE when empty
+                    mediaSectionContainer.visibility = View.GONE
+                }
             }
         }.start()
     }
