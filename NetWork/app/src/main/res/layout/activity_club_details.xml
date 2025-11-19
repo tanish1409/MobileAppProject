@@ -24,157 +24,178 @@
             android:paddingRight="16dp"
             android:paddingLeft="16dp">
 
-        <TextView
-            android:id="@+id/clubNameText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Club Name"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-        <TextView
-            android:id="@+id/clubSportText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sport Type"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp" />
-
-        <fragment
-            android:id="@+id/clubDetailsMap"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="12dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/card_bg">
             <TextView
-                android:text="Description"
+                android:id="@+id/clubNameText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Club Name"
+                android:textSize="24sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/clubDescriptionText"
+                android:id="@+id/clubSportText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Club description here" />
+                android:text="Sport Type"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+
+            <fragment
+                android:id="@+id/clubDetailsMap"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="12dp" />
+
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp">
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/card_bg">
                 <TextView
-                    android:text="Rating: "
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView
-                    android:id="@+id/clubRatingText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0.0" />
-                <TextView
-                    android:text="   Members: "
+                    android:text="Description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp" />
+                    android:textStyle="bold" />
                 <TextView
-                    android:id="@+id/clubMembersText"
+                    android:id="@+id/clubDescriptionText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0" />
+                    android:layout_marginTop="4dp"
+                    android:text="Club description here" />
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+                    <TextView
+                        android:text="Rating: "
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/clubRatingText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.0" />
+                    <TextView
+                        android:text="   Members: "
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp" />
+                    <TextView
+                        android:id="@+id/clubMembersText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/mediaSectionContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginTop="0dp" >
-
-            <TextView
-                android:id="@+id/mediaTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Media"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginTop="16dp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/mediaRecycler"
+            <LinearLayout
+                android:id="@+id/mediaSectionContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="0dp" >
+
+                <TextView
+                    android:id="@+id/mediaTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Media"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_marginTop="16dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/mediaRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_media" />
+            </LinearLayout>
+
+            <!-- ACTION BUTTONS (Join/Review) -->
+            <LinearLayout
+                android:id="@+id/actionButtonsLayout"
                 android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_media" />
-        </LinearLayout>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
+                <Button
+                    android:id="@+id/joinClubBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Join Club" />
+                <Button
+                    android:id="@+id/addReviewBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Add Review"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/actionButtonsLayout"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
-            <Button
-                android:id="@+id/joinClubBtn"
-                android:layout_width="0dp"
+            <!-- OWNER CONTROLS (View Members / Create Event) -->
+            <LinearLayout
+                android:id="@+id/ownerControlsLayout"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Join Club" />
-            <Button
-                android:id="@+id/addReviewBtn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Add Review"
-                android:layout_marginStart="8dp" />
-        </LinearLayout>
+                android:layout_marginTop="16dp">
 
-        <LinearLayout
-            android:id="@+id/actionButtonsLayout2"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
-            <Button
-                android:id="@+id/viewMembersBtn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="View Members" />
+                <Button
+                    android:id="@+id/viewMembersBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="View Members"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:textColor="#009688"
+                    app:strokeColor="#009688"/>
+
+                <Button
+                    android:id="@+id/createEventBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="CREATE NEW EVENT"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:textColor="#FF9800"
+                    app:strokeColor="#FF9800"
+                    app:cornerRadius="8dp"/>
+            </LinearLayout>
+
+            <!-- Back Button -->
             <Button
                 android:id="@+id/backBtn"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="Back"
-                android:layout_marginStart="8dp" />
-        </LinearLayout>
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"/>
 
-        <TextView
-            android:id="@+id/reviewsTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Reviews"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp" />
+            <TextView
+                android:id="@+id/reviewsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reviews"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/reviewsRecycler"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:listitem="@layout/item_review" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/reviewsRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/item_review" />
 
         </LinearLayout>
     </ScrollView>

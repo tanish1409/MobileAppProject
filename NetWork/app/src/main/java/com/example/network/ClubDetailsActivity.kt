@@ -53,6 +53,8 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mediaSectionContainer: LinearLayout
 
     private lateinit var viewMembersBtn: Button
+    private lateinit var createEventBtn: Button // Declaration for the Create Event Button
+    private lateinit var ownerControlsLayout: LinearLayout // To control visibility of owner buttons
 
     private val addReviewLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -61,11 +63,18 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    // Launcher for CreateEventActivity
+    private val createEventLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            Toast.makeText(this, "Event created. Events list needs refresh.", Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_club_details)
 
-        sessionManager = SessionManager(this) // NEW: Initialize session manager
+        sessionManager = SessionManager(this)
         userId = sessionManager.getUserId()
 
         repository = DatabaseRepository(this)
@@ -85,14 +94,31 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         loadClubData()
 
-        findViewById<Button>(R.id.backBtn).setOnClickListener {
-            finish()
-        }
+        // Back button is now bound in bindViews and handled there
+    }
 
-        findViewById<Button>(R.id.joinClubBtn).setOnClickListener {
-            Toast.makeText(this, "Join Club coming soon", Toast.LENGTH_SHORT).show()
-        }
+    private fun bindViews() {
+        clubNameText = findViewById(R.id.clubNameText)
+        clubSportText = findViewById(R.id.clubSportText)
+        clubDescriptionText = findViewById(R.id.clubDescriptionText)
+        clubRatingText = findViewById(R.id.clubRatingText)
+        clubMembersText = findViewById(R.id.clubMembersText)
+        joinClubBtn = findViewById(R.id.joinClubBtn)
 
+        // Owner Controls
+        viewMembersBtn = findViewById(R.id.viewMembersBtn)
+        createEventBtn = findViewById(R.id.createEventBtn) // Bind create event button
+        ownerControlsLayout = findViewById(R.id.ownerControlsLayout) // Bind the layout container
+
+        reviewsRecycler = findViewById(R.id.reviewsRecycler)
+        reviewsRecycler.layoutManager = LinearLayoutManager(this)
+
+        mediaRecycler = findViewById(R.id.mediaRecycler)
+        mediaRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        mediaTitle = findViewById(R.id.mediaTitle)
+        mediaSectionContainer = findViewById(R.id.mediaSectionContainer)
+
+        // Set standard listeners once
         findViewById<Button>(R.id.addReviewBtn).setOnClickListener {
             val intent = Intent(this, AddReviewActivity::class.java)
             intent.putExtra("club_id", clubId)
@@ -102,24 +128,10 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         joinClubBtn.setOnClickListener {
             handleJoinLeaveClub()
         }
-    }
 
-    private fun bindViews() {
-        clubNameText = findViewById(R.id.clubNameText)
-        clubSportText = findViewById(R.id.clubSportText)
-        clubDescriptionText = findViewById(R.id.clubDescriptionText)
-        clubRatingText = findViewById(R.id.clubRatingText)
-        clubMembersText = findViewById(R.id.clubMembersText)
-        viewMembersBtn = findViewById(R.id.viewMembersBtn)
-
-        reviewsRecycler = findViewById(R.id.reviewsRecycler)
-        reviewsRecycler.layoutManager = LinearLayoutManager(this)
-
-        mediaRecycler = findViewById(R.id.mediaRecycler)
-        mediaRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        mediaTitle = findViewById(R.id.mediaTitle)
-        mediaSectionContainer = findViewById(R.id.mediaSectionContainer)
-        joinClubBtn = findViewById(R.id.joinClubBtn)
+        findViewById<Button>(R.id.backBtn).setOnClickListener {
+            finish()
+        }
     }
 
     private fun loadClubData() {
@@ -146,7 +158,7 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 updateMapLocation()
 
                 isMember = currentIsMember
-                updateJoinButton(club.ownerId)
+                updateClubActionButtons(club.ownerId, club.name)
 
                 reviewsRecycler.adapter = ReviewAdapter(reviews)
 
@@ -162,13 +174,19 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         }.start()
     }
 
-    private fun updateJoinButton(ownerId: Int) {
+    // Handles JOIN/LEAVE, VIEW MEMBERS, and CREATE EVENT
+    private fun updateClubActionButtons(ownerId: Int, clubName: String?) {
         // 1. Check if the current user is the owner
         if (userId == ownerId) {
             joinClubBtn.text = "CLUB OWNER"
-            joinClubBtn.isEnabled = false // Owner can't join/leave their own club this way
-            // Owner logic: Show the view members button
+            joinClubBtn.isEnabled = false
+
+            // Show owner controls container
+            ownerControlsLayout.visibility = View.VISIBLE
             viewMembersBtn.visibility = View.VISIBLE
+            createEventBtn.visibility = View.VISIBLE
+
+            // Set up View Members Click Listener
             viewMembersBtn.setOnClickListener {
                 val intent = Intent(this, ClubMembersActivity::class.java).apply {
                     putExtra("club_id", clubId)
@@ -176,19 +194,28 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 startActivity(intent)
             }
+
+            // Set up Create Event Click Listener
+            createEventBtn.setOnClickListener {
+                val intent = Intent(this, CreateEventActivity::class.java).apply {
+                    putExtra("club_id", clubId)
+                    putExtra("club_name", clubName)
+                }
+                createEventLauncher.launch(intent)
+            }
         }
         // 2. Check if the current user is a regular member
         else if (isMember) {
             joinClubBtn.text = "LEAVE CLUB"
             joinClubBtn.setBackgroundResource(android.R.color.darker_gray)
             joinClubBtn.isEnabled = true
-            viewMembersBtn.visibility = View.GONE
+            ownerControlsLayout.visibility = View.GONE
         }
         // 3. User is not the owner and not a member
         else {
             joinClubBtn.text = "JOIN CLUB"
             joinClubBtn.isEnabled = true
-            viewMembersBtn.visibility = View.GONE
+            ownerControlsLayout.visibility = View.GONE
         }
     }
 

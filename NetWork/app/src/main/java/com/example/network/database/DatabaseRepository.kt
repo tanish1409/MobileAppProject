@@ -146,7 +146,24 @@ class DatabaseRepository(context: Context) {
     // CLUB OPERATIONS
     // ============================================
 
-    // In DatabaseRepository.kt
+    fun isUserClubOwner(userId: Int, clubId: Int): Boolean {
+        val cursor = db.query(
+            "Clubs",
+            arrayOf("owner_id"),
+            "club_id = ?",
+            arrayOf(clubId.toString()),
+            null, null, null
+        )
+
+        val isOwner = if (cursor.moveToFirst()) {
+            val ownerId = cursor.getInt(cursor.getColumnIndexOrThrow("owner_id"))
+            ownerId == userId
+        } else {
+            false
+        }
+        cursor.close()
+        return isOwner
+    }
 
     fun createClub(name: String, description: String?, sportType: String,
                    locationLat: Double, locationLong: Double, ownerId: Int): Long {

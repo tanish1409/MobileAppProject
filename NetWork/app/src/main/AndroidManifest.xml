@@ -64,6 +64,9 @@
         <activity android:name=".ClubMembersActivity"
             android:exported="false"
             android:label="Club Members"/>
+        <activity android:name=".CreateEventActivity"
+            android:exported="false"
+            android:label="Create Event"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD9Cn3vAe3_1ZoBK_SWTFxdwogZTiJG3SA" />
