@@ -29,7 +29,7 @@
             android:id="@+id/searchClubField"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search Clubs"
+            android:hint="Search by Name or Sport"
             android:inputType="text"
             android:drawableStart="@android:drawable/ic_menu_search"
             android:drawablePadding="8dp"
@@ -38,6 +38,68 @@
             android:paddingTop="12dp"
             android:paddingBottom="12dp"/>
     </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:id="@+id/locationSearchContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@drawable/card_bg"
+        android:elevation="2dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"> <!-- Initially hidden -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Location Search Settings"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Radius Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            app:suffixText="km"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusTopStart="8dp"
+            app:boxCornerRadiusTopEnd="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/radiusField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search Radius"
+                android:inputType="numberDecimal"
+                android:text="10" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Status/Error Text -->
+        <TextView
+            android:id="@+id/locationStatusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Location: Unknown"
+            android:textColor="#757575"
+            android:textSize="12sp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/locationSearchToggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Search by Location (Radius)"
+        android:checked="false"
+        android:layout_marginBottom="16dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/createClubBtn"
