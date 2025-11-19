@@ -184,5 +184,16 @@
             app:backgroundTint="#CCCCCC"
             android:textColor="#212121"/>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/changePasswordBtn"
+            android:layout_marginTop="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change Password"
+            android:textAllCaps="false"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:textColor="#6200EE"
+            android:layout_marginBottom="16dp"/>
+
     </LinearLayout>
 </ScrollView>

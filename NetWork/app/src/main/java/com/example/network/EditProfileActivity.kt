@@ -24,6 +24,9 @@ import com.google.android.material.textfield.TextInputEditText
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import android.widget.TextView
+import android.app.Dialog
+import android.view.LayoutInflater
 
 class EditProfileActivity : AppCompatActivity() {
 
@@ -37,6 +40,8 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var saveBtn: Button
     private lateinit var cancelBtn: Button
     private lateinit var changePhotoBtn: com.google.android.material.floatingactionbutton.FloatingActionButton
+
+    private lateinit var changePasswordBtn: Button
 
     private var userId: Int = -1
     private var selectedImagePath: String? = null
@@ -110,6 +115,7 @@ class EditProfileActivity : AppCompatActivity() {
         saveBtn = findViewById(R.id.saveBtn)
         cancelBtn = findViewById(R.id.cancelBtn)
         changePhotoBtn = findViewById(R.id.changePhotoBtn)
+        changePasswordBtn = findViewById(R.id.changePasswordBtn)
     }
 
     private fun setupClickListeners() {
@@ -127,6 +133,10 @@ class EditProfileActivity : AppCompatActivity() {
 
         profileImage.setOnClickListener {
             checkPermissionAndShowDialog()
+        }
+
+        changePasswordBtn.setOnClickListener {
+            showChangePasswordDialog()
         }
     }
 
@@ -312,6 +322,84 @@ class EditProfileActivity : AppCompatActivity() {
                 }
             }
         }.start()
+    }
+
+    private fun showChangePasswordDialog() {
+        val dialog = Dialog(this)
+        // **NOTE**: You must create the layout resource file 'dialog_change_password' (Step 3)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_change_password, null)
+        dialog.setContentView(dialogView)
+
+        val currentPasswordField = dialogView.findViewById<TextInputEditText>(R.id.dialogCurrentPassword)
+        val newPasswordField = dialogView.findViewById<TextInputEditText>(R.id.dialogNewPassword)
+        val confirmNewPasswordField = dialogView.findViewById<TextInputEditText>(R.id.dialogConfirmNewPassword)
+        val saveNewPasswordBtn = dialogView.findViewById<Button>(R.id.dialogSavePasswordBtn)
+        val cancelDialogBtn = dialogView.findViewById<Button>(R.id.dialogCancelBtn)
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        saveNewPasswordBtn.setOnClickListener {
+            val currentPassword = currentPasswordField.text.toString()
+            val newPassword = newPasswordField.text.toString()
+            val confirmNewPassword = confirmNewPasswordField.text.toString()
+
+            // Client-Side Validation (simplified, use better validation methods)
+            if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty()) {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (newPassword.length < 6) {
+                newPasswordField.error = "Must be 6+ chars"
+                return@setOnClickListener
+            }
+            if (newPassword != confirmNewPassword) {
+                confirmNewPasswordField.error = "Passwords do not match"
+                return@setOnClickListener
+            }
+            if (currentPassword == newPassword) {
+                newPasswordField.error = "New password must be different"
+                return@setOnClickListener
+            }
+
+            saveNewPasswordBtn.isEnabled = false
+
+            // Perform password change on a background thread
+            Thread {
+                // 1. Verify current password
+                val isCurrentPasswordValid = repository.verifyCurrentPassword(userId, currentPassword)
+
+                runOnUiThread {
+                    if (isCurrentPasswordValid) {
+                        // 2. Update password
+                        Thread {
+                            val updateSuccess = repository.updateUserPassword(userId, newPassword)
+
+                            runOnUiThread {
+                                saveNewPasswordBtn.isEnabled = true
+                                dialog.dismiss()
+
+                                if (updateSuccess) {
+                                    Toast.makeText(this, "Password updated successfully!", Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(this, "Failed to update password. Try again.", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }.start()
+                    } else {
+                        // Current password incorrect
+                        saveNewPasswordBtn.isEnabled = true
+                        currentPasswordField.error = "Incorrect current password"
+                        Toast.makeText(this, "Incorrect current password", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }.start()
+        }
+
+        cancelDialogBtn.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun saveProfile() {

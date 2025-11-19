@@ -689,6 +689,28 @@ class DatabaseRepository(context: Context) {
         return mediaList
     }
 
+    fun verifyCurrentPassword(userId: Int, password: String): Boolean {
+        val hashedPassword = hashPassword(password)
+        val cursor = db.query(
+            "Users",
+            arrayOf("user_id"),
+            "user_id = ? AND password_hash = ?",
+            arrayOf(userId.toString(), hashedPassword),
+            null, null, null
+        )
+        val isValid = cursor.moveToFirst()
+        cursor.close()
+        return isValid
+    }
+
+    fun updateUserPassword(userId: Int, newPassword: String): Boolean {
+        val newHashedPassword = hashPassword(newPassword)
+        val values = ContentValues().apply {
+            put("password_hash", newHashedPassword)
+        }
+        return db.update("Users", values, "user_id = ?", arrayOf(userId.toString())) > 0
+    }
+
 
     // ============================================
     // HELPER METHODS
