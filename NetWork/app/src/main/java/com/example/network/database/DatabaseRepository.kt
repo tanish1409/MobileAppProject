@@ -528,6 +528,46 @@ class DatabaseRepository(context: Context) {
         return attendees
     }
 
+    /**
+     * Retrieves clubs owned by a specific user.
+     */
+    fun getClubsOwnedByUser(userId: Int): List<Club> {
+        val clubs = mutableListOf<Club>()
+        val cursor = db.query(
+            "Clubs",
+            null,
+            "owner_id = ?",
+            arrayOf(userId.toString()),
+            null, null, null
+        )
+        while (cursor.moveToNext()) {
+            clubs.add(cursorToClub(cursor))
+        }
+        cursor.close()
+        return clubs
+    }
+
+    /**
+     * Retrieves clubs a user has joined (is a member of, excluding clubs they own).
+     */
+    fun getClubsJoinedByUser(userId: Int): List<Club> {
+        val clubs = mutableListOf<Club>()
+        val cursor = db.rawQuery(
+            """
+        SELECT C.* FROM Clubs C
+        INNER JOIN Club_Membership CM ON C.club_id = CM.club_id
+        WHERE CM.user_id = ? AND C.owner_id != ?
+        """.trimIndent(),
+            arrayOf(userId.toString(), userId.toString())
+        )
+
+        while (cursor.moveToNext()) {
+            clubs.add(cursorToClub(cursor))
+        }
+        cursor.close()
+        return clubs
+    }
+
     // ============================================
     // REVIEW OPERATIONS
     // ============================================

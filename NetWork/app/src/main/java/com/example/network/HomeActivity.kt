@@ -32,13 +32,16 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.network.utils.OnShakeListener
 import com.example.network.utils.ShakeDetector
+import com.example.network.utils.SessionManager
 import androidx.annotation.DrawableRes
 
 class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
 
     private lateinit var mMap: GoogleMap
+    private lateinit var sessionManager: SessionManager // NEW
+    private var userId: Int = -1 // NEW
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
-    private var selectedSport: String = "All"
+    private var selectedFilter: String = "All" // RENAMED from selectedSport
 
     // --- SENSOR PROPERTIES ---
     private lateinit var mSensorManager: SensorManager
@@ -50,6 +53,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+        sessionManager = SessionManager(this) // NEW
+        userId = sessionManager.getUserId() // NEW
 
         // --- SENSOR SETUP (SAFE TO CALL HERE) ---
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -89,15 +95,13 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
             if (checkedIds.isNotEmpty() && ::mMap.isInitialized) {
                 val chipId = checkedIds[0]
                 val chip = findViewById<Chip>(chipId)
-                selectedSport = chip.text.toString()
+                selectedFilter = chip.text.toString() // Use selectedFilter
 
                 mMap.clear()
                 activeMarkers.clear()
                 loadClubMarkers(mMap)
             }
         }
-
-        // Removed map-dependent calls from here.
     }
 
     override fun onResume() {
@@ -108,6 +112,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
             mAccelerometer,
             SensorManager.SENSOR_DELAY_UI
         )
+
+        // Re-initialize userId in case of login/logout changes
+        userId = sessionManager.getUserId()
 
         if (::mMap.isInitialized) {
             mMap.clear()
@@ -143,20 +150,29 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
 
     private fun loadClubMarkers(googleMap: GoogleMap) {
         val repo = DatabaseRepository(this)
-        val allClubs = repo.getAllClubs()
 
         activeMarkers.clear()
         googleMap.clear()
 
-        val clubs = if (selectedSport.equals("All", ignoreCase = true)) {
-            allClubs
-        } else {
-            val target = selectedSport.trim().lowercase()
-
-            allClubs.filter { club ->
-                club.sportType.trim().lowercase() == target
+        // --- NEW FILTERING LOGIC ---
+        val clubs = when (selectedFilter) {
+            "My Clubs" -> {
+                if (userId != -1) repo.getClubsOwnedByUser(userId) else emptyList()
+            }
+            "Joined Clubs" -> {
+                if (userId != -1) repo.getClubsJoinedByUser(userId) else emptyList()
+            }
+            "All" -> {
+                repo.getAllClubs()
+            }
+            else -> { // Default: Filter by specific sport type
+                val target = selectedFilter.trim().lowercase()
+                repo.getAllClubs().filter { club ->
+                    club.sportType.trim().lowercase() == target
+                }
             }
         }
+        // --- END NEW FILTERING LOGIC ---
 
         clubs.forEach { club ->
             val position = LatLng(club.locationLat, club.locationLong)
@@ -181,20 +197,11 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
     }
 
 
-
     private fun setupMapListeners() {
         // 1. Marker Click Listener (Handles Zoom)
         mMap.setOnMarkerClickListener { marker ->
-
-            // Step A: Animate the map camera to center over the marker (Your custom zoom)
-            // We use a zoom level of 15f for a good close-up view.
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 15f))
-
-            // Step B: Manually trigger the info window to show immediately
             marker.showInfoWindow()
-
-            // Step C: Return TRUE to consume the event.
-            // This blocks the default Google Maps click behavior (which was interfering with the zoom)
             true
         }
 
@@ -265,13 +272,11 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
 
 
     override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap // <--- mMap is INITIALIZED HERE!
-
-        // NOW IT IS SAFE TO CALL FUNCTIONS THAT USE mMap
+        mMap = googleMap
 
         enableMyLocation()
 
-        loadClubMarkers(mMap) // Loads markers and calls zoomToFitAllMarkers()
+        loadClubMarkers(mMap)
 
         setupMapListeners()
 

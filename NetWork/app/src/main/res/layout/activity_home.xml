@@ -30,6 +30,20 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/chip_my_clubs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Clubs"
+                style="@style/Widget.MaterialComponents.Chip.Filter" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_joined_clubs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Joined Clubs"
+                style="@style/Widget.MaterialComponents.Chip.Filter" />
+
+            <com.google.android.material.chip.Chip
                 android:id="@+id/chip_soccer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
