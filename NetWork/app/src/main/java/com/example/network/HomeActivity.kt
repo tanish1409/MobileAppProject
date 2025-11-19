@@ -1,10 +1,14 @@
 package com.example.network
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -24,30 +28,38 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import android.widget.ImageButton
-import android.graphics.BitmapFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.example.network.utils.OnShakeListener
+import com.example.network.utils.ShakeDetector
+import androidx.annotation.DrawableRes
 
-
-
-
-
-class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
+class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
 
     private lateinit var mMap: GoogleMap
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
     private var selectedSport: String = "All"
+
+    // --- SENSOR PROPERTIES ---
+    private lateinit var mSensorManager: SensorManager
+    private lateinit var mAccelerometer: Sensor
+    private lateinit var mShakeDetector: ShakeDetector
+    private val activeMarkers = mutableListOf<Marker>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
+        // --- SENSOR SETUP (SAFE TO CALL HERE) ---
+        mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!!
+        mShakeDetector = ShakeDetector(this)
+
         // Initialize map
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        mapFragment.getMapAsync(this) // mMap is initialized inside onMapReady() later
 
         val fabClubs = findViewById<FloatingActionButton>(R.id.fabClubs)
         fabClubs.setOnClickListener {
@@ -61,16 +73,17 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val zoomIn = findViewById<ImageButton>(R.id.zoomInBtn)
         zoomIn.setOnClickListener {
-            mMap.animateCamera(CameraUpdateFactory.zoomIn())
+            if (::mMap.isInitialized) mMap.animateCamera(CameraUpdateFactory.zoomIn())
         }
 
         val zoomOut = findViewById<ImageButton>(R.id.zoomOutBtn)
         zoomOut.setOnClickListener {
-            mMap.animateCamera(CameraUpdateFactory.zoomOut())
+            if (::mMap.isInitialized) mMap.animateCamera(CameraUpdateFactory.zoomOut())
         }
 
 
         val chipGroup = findViewById<ChipGroup>(R.id.sportChipGroup)
+
 
         chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
             if (checkedIds.isNotEmpty() && ::mMap.isInitialized) {
@@ -79,19 +92,52 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 selectedSport = chip.text.toString()
 
                 mMap.clear()
+                activeMarkers.clear()
                 loadClubMarkers(mMap)
             }
         }
 
-
+        // Removed map-dependent calls from here.
     }
 
     override fun onResume() {
         super.onResume()
+        // Register shake listener
+        mSensorManager.registerListener(
+            mShakeDetector,
+            mAccelerometer,
+            SensorManager.SENSOR_DELAY_UI
+        )
+
         if (::mMap.isInitialized) {
             mMap.clear()
+            activeMarkers.clear()
             loadClubMarkers(mMap)
         }
+    }
+
+    override fun onPause() {
+        // Unregister shake listener to save battery
+        mSensorManager.unregisterListener(mShakeDetector)
+        super.onPause()
+    }
+
+    // --- SHAKE DETECTOR CALLBACK ---
+    override fun onShake() {
+        if (activeMarkers.isNotEmpty()) {
+            Toast.makeText(this, "Suggesting a Club!", Toast.LENGTH_SHORT).show()
+            highlightRandomClub()
+        } else {
+            Toast.makeText(this, "Shake: No clubs found in this category.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // --- SIMPLIFIED FOCUSING LOGIC ---
+    private fun highlightRandomClub() {
+        if (!::mMap.isInitialized) return
+        val suggestedMarker = activeMarkers.random()
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(suggestedMarker.position, 15f))
+        suggestedMarker.showInfoWindow()
     }
 
 
@@ -99,7 +145,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         val repo = DatabaseRepository(this)
         val allClubs = repo.getAllClubs()
 
-        // Apply filter
+        activeMarkers.clear()
+        googleMap.clear()
+
         val clubs = if (selectedSport.equals("All", ignoreCase = true)) {
             allClubs
         } else {
@@ -110,11 +158,11 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-
         clubs.forEach { club ->
             val position = LatLng(club.locationLat, club.locationLong)
 
             val iconRes = getIconForSport(club.sportType)
+
             val marker = googleMap.addMarker(
                 MarkerOptions()
                     .position(position)
@@ -124,6 +172,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             )
 
             marker?.tag = club.clubId
+            if (marker != null) {
+                activeMarkers.add(marker)
+            }
         }
 
         zoomToFitAllMarkers(clubs)
@@ -131,7 +182,23 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-    private fun setupMarkerClickListeners() {
+    private fun setupMapListeners() {
+        // 1. Marker Click Listener (Handles Zoom)
+        mMap.setOnMarkerClickListener { marker ->
+
+            // Step A: Animate the map camera to center over the marker (Your custom zoom)
+            // We use a zoom level of 15f for a good close-up view.
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 15f))
+
+            // Step B: Manually trigger the info window to show immediately
+            marker.showInfoWindow()
+
+            // Step C: Return TRUE to consume the event.
+            // This blocks the default Google Maps click behavior (which was interfering with the zoom)
+            true
+        }
+
+        // 2. Info Window Click Listener (Handles Navigation)
         mMap.setOnInfoWindowClickListener { marker ->
             val clubId = marker.tag as? Int
             if (clubId != null) {
@@ -152,18 +219,17 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             "basketball" -> R.drawable.marker_basketball
             "soccer" -> R.drawable.marker_soccer
             "volleyball" -> R.drawable.marker_volleyball
-            // New sports
             "tennis" -> R.drawable.marker_tennis
             "running" -> R.drawable.marker_running
             "badminton" -> R.drawable.marker_badminton
-            else -> R.drawable.marker_default // fallback
+            else -> R.drawable.marker_default
         }
     }
 
     private fun setCustomInfoWindow() {
         mMap.setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter {
             override fun getInfoWindow(marker: Marker): View? {
-                return null // Use default background frame
+                return null
             }
 
             override fun getInfoContents(marker: Marker): View {
@@ -182,6 +248,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun zoomToFitAllMarkers(clubs: List<Club>) {
         if (clubs.isEmpty()) return
+        if (!::mMap.isInitialized) return
 
         val boundsBuilder = LatLngBounds.Builder()
 
@@ -192,33 +259,30 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val bounds = boundsBuilder.build()
 
-        // Animate camera to fit all markers with padding
         val padding = 150 // px
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
     }
 
 
     override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
+        mMap = googleMap // <--- mMap is INITIALIZED HERE!
 
-        // Set default location (Toronto, based on your location)
-        val toronto = LatLng(43.6532, -79.3832)
+        // NOW IT IS SAFE TO CALL FUNCTIONS THAT USE mMap
 
-        // Check and request location permission
         enableMyLocation()
 
-        loadClubMarkers(mMap)
+        loadClubMarkers(mMap) // Loads markers and calls zoomToFitAllMarkers()
 
-        setupMarkerClickListeners()
+        setupMapListeners()
 
         setCustomInfoWindow()
 
-        // Enable zoom controls
+        // Disable default zoom controls
         mMap.uiSettings.isZoomControlsEnabled = false
         mMap.uiSettings.isCompassEnabled = false
         mMap.uiSettings.isMyLocationButtonEnabled = false
         mMap.uiSettings.isMapToolbarEnabled = false
-        
+
     }
 
     private fun enableMyLocation() {
