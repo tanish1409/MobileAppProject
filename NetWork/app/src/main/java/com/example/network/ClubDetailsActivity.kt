@@ -56,8 +56,8 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mediaSectionContainer: LinearLayout
 
     private lateinit var viewMembersBtn: Button
-    private lateinit var createEventBtn: Button // Declaration for the Create Event Button
-    private lateinit var ownerControlsLayout: LinearLayout // To control visibility of owner buttons
+    private lateinit var createEventBtn: Button
+    private lateinit var ownerControlsLayout: LinearLayout
 
     private val addReviewLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -66,10 +66,17 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // Launcher for CreateEventActivity
     private val createEventLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            Toast.makeText(this, "Event created. Events list needs refresh.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Event created. Refreshing list...", Toast.LENGTH_LONG).show()
+            loadClubData()
+        }
+    }
+
+    // Launcher to refresh data if we return from EventDetails (useful if capacity changed)
+    private val eventDetailsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            loadClubData()
         }
     }
 
@@ -96,8 +103,6 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         loadClubData()
-
-        // Back button is now bound in bindViews and handled there
     }
 
     private fun bindViews() {
@@ -110,8 +115,12 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Owner Controls
         viewMembersBtn = findViewById(R.id.viewMembersBtn)
-        createEventBtn = findViewById(R.id.createEventBtn) // Bind create event button
-        ownerControlsLayout = findViewById(R.id.ownerControlsLayout) // Bind the layout container
+        createEventBtn = findViewById(R.id.createEventBtn)
+        ownerControlsLayout = findViewById(R.id.ownerControlsLayout)
+
+        // Event Recycler Bind and Setup
+        eventsRecycler = findViewById(R.id.eventsRecycler)
+        eventsRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
         reviewsRecycler = findViewById(R.id.reviewsRecycler)
         reviewsRecycler.layoutManager = LinearLayoutManager(this)
@@ -120,9 +129,6 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         mediaRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         mediaTitle = findViewById(R.id.mediaTitle)
         mediaSectionContainer = findViewById(R.id.mediaSectionContainer)
-
-        eventsRecycler = findViewById(R.id.eventsRecycler)
-        eventsRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
         // Set standard listeners once
         findViewById<Button>(R.id.addReviewBtn).setOnClickListener {
@@ -172,8 +178,9 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val eventAdapter = EventAdapter(
                     events = clubEvents,
                     userId = userId,
-                    joinLeaveListener = ::handleJoinLeaveEvent, // Pass the handler function
-                    isUserAttendingChecker = repository::isUserAttendingEvent // Pass the repo check function
+                    joinLeaveListener = ::handleJoinLeaveEvent, // For the button click
+                    isUserAttendingChecker = repository::isUserAttendingEvent, // For button state
+                    onItemClickListener = ::handleEventItemClick
                 )
                 eventsRecycler.adapter = eventAdapter
 
@@ -187,6 +194,13 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }.start()
+    }
+
+    // Function to handle the full event item click: LAUNCHES EVENT DETAILS
+    private fun handleEventItemClick(event: Event) {
+        val intent = Intent(this, EventDetailsActivity::class.java)
+        intent.putExtra("event_id", event.eventId)
+        eventDetailsLauncher.launch(intent) // Use the new launcher
     }
 
     // Handles JOIN/LEAVE, VIEW MEMBERS, and CREATE EVENT
@@ -258,6 +272,7 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         }.start()
     }
 
+    // Function to handle the join/leave event click from the adapter
     private fun handleJoinLeaveEvent(event: Event) {
         // Determine current status using the repository function
         val isCurrentlyAttending = repository.isUserAttendingEvent(event.eventId, userId)

@@ -503,6 +503,31 @@ class DatabaseRepository(context: Context) {
         return isAttending
     }
 
+    /**
+     * Retrieves a list of users attending a specific event.
+     */
+    fun getEventAttendees(eventId: Int): List<User> {
+        val attendees = mutableListOf<User>()
+
+        // Join Event_Attendance with Users to get profile details for every attendee
+        val cursor = db.rawQuery(
+            """
+            SELECT U.* FROM Event_Attendance EA
+            INNER JOIN Users U ON EA.user_id = U.user_id
+            WHERE EA.event_id = ? AND EA.status = 'joined'
+            ORDER BY U.name ASC
+        """.trimIndent(),
+            arrayOf(eventId.toString())
+        )
+
+        // Assuming you have a cursorToUser(cursor) helper function that works for the User model
+        while (cursor.moveToNext()) {
+            attendees.add(cursorToUser(cursor))
+        }
+        cursor.close()
+        return attendees
+    }
+
     // ============================================
     // REVIEW OPERATIONS
     // ============================================

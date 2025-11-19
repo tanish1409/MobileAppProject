@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/eventDetailTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Event Title"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/eventDetailDateTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date | Time"
+            android:textSize="16sp"
+            android:textColor="#6200EE"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/eventDetailClubHost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hosted by: [Club Name]"
+            android:textSize="14sp"
+            android:textColor="#757575"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Details Card -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:background="@drawable/card_bg"
+            android:elevation="2dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:text="Description"
+                android:textStyle="bold"
+                android:textColor="#212121"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/eventDetailDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Full event description here."/>
+
+            <TextView
+                android:id="@+id/eventDetailParticipants"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textStyle="bold"
+                android:textColor="#B00020"
+                android:text="Capacity: 0 / 0"/>
+
+        </LinearLayout>
+
+        <!-- ATTENDEE LIST -->
+        <TextView
+            android:id="@+id/attendeeListTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Attendees (0)"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="12dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/attendeeRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            tools:listitem="@layout/user_list_item"/>
+
+        <Button
+            android:id="@+id/backBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Back"
+            android:layout_marginTop="24dp"/>
+
+    </LinearLayout>
+</ScrollView>

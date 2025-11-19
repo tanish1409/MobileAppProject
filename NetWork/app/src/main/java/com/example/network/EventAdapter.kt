@@ -15,8 +15,8 @@ class EventAdapter(
     private var events: List<Event>,
     private val userId: Int,
     private val joinLeaveListener: (Event) -> Unit,
-    // Function passed from Activity to check attendance status from DB
-    private val isUserAttendingChecker: (Int, Int) -> Boolean
+    private val isUserAttendingChecker: (Int, Int) -> Boolean,
+    private val onItemClickListener: (Event) -> Unit
 ) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
 
     class EventViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -73,6 +73,9 @@ class EventAdapter(
             if (event.hostId != userId) {
                 joinLeaveListener(event)
             }
+        }
+        holder.itemView.setOnClickListener {
+            onItemClickListener(event)
         }
     }
 
