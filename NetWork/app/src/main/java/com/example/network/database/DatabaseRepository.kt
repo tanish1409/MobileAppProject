@@ -230,6 +230,33 @@ class DatabaseRepository(context: Context) {
         return isMember
     }
 
+    /**
+     * Retrieves a list of users who are members of a specific club.
+     * Excludes the owner who is technically also in the membership table.
+     */
+    fun getClubMembers(clubId: Int, ownerId: Int): List<User> {
+        val members = mutableListOf<User>()
+
+        // We join Club_Membership with Users to get the member details.
+        // We exclude the owner_id to avoid confusion, as the owner is treated separately.
+        val cursor = db.rawQuery(
+            """
+            SELECT U.* FROM Club_Membership CM
+            INNER JOIN Users U ON CM.user_id = U.user_id
+            WHERE CM.club_id = ? AND CM.user_id != ?
+            ORDER BY U.name ASC
+        """.trimIndent(),
+            arrayOf(clubId.toString(), ownerId.toString())
+        )
+
+        // Assuming you have a cursorToUser(cursor) helper function:
+        while (cursor.moveToNext()) {
+            members.add(cursorToUser(cursor))
+        }
+        cursor.close()
+        return members
+    }
+
     fun getAllClubs(): List<Club> {
         val clubs = mutableListOf<Club>()
         val cursor = db.rawQuery("""

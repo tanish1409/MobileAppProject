@@ -139,12 +139,26 @@
                 android:layout_marginStart="8dp" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/backBtn"
+        <LinearLayout
+            android:id="@+id/actionButtonsLayout2"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Back"
-            android:layout_marginTop="12dp" />
+            android:layout_marginTop="16dp">
+            <Button
+                android:id="@+id/viewMembersBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="View Members" />
+            <Button
+                android:id="@+id/backBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Back"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/reviewsTitle"

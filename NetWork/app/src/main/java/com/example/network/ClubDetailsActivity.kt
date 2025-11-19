@@ -52,6 +52,8 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mediaTitle: TextView
     private lateinit var mediaSectionContainer: LinearLayout
 
+    private lateinit var viewMembersBtn: Button
+
     private val addReviewLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             Toast.makeText(this, "Refreshing reviews...", Toast.LENGTH_SHORT).show()
@@ -108,6 +110,7 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         clubDescriptionText = findViewById(R.id.clubDescriptionText)
         clubRatingText = findViewById(R.id.clubRatingText)
         clubMembersText = findViewById(R.id.clubMembersText)
+        viewMembersBtn = findViewById(R.id.viewMembersBtn)
 
         reviewsRecycler = findViewById(R.id.reviewsRecycler)
         reviewsRecycler.layoutManager = LinearLayoutManager(this)
@@ -164,17 +167,28 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (userId == ownerId) {
             joinClubBtn.text = "CLUB OWNER"
             joinClubBtn.isEnabled = false // Owner can't join/leave their own club this way
+            // Owner logic: Show the view members button
+            viewMembersBtn.visibility = View.VISIBLE
+            viewMembersBtn.setOnClickListener {
+                val intent = Intent(this, ClubMembersActivity::class.java).apply {
+                    putExtra("club_id", clubId)
+                    putExtra("owner_id", ownerId)
+                }
+                startActivity(intent)
+            }
         }
         // 2. Check if the current user is a regular member
         else if (isMember) {
             joinClubBtn.text = "LEAVE CLUB"
             joinClubBtn.setBackgroundResource(android.R.color.darker_gray)
             joinClubBtn.isEnabled = true
+            viewMembersBtn.visibility = View.GONE
         }
         // 3. User is not the owner and not a member
         else {
             joinClubBtn.text = "JOIN CLUB"
             joinClubBtn.isEnabled = true
+            viewMembersBtn.visibility = View.GONE
         }
     }
 
