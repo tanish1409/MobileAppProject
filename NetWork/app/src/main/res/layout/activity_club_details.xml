@@ -124,20 +124,22 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="16dp"
+                android:gravity="center_horizontal">
+
                 <Button
                     android:id="@+id/joinClubBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Join Club" />
+                    android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Join Club"
+                android:layout_marginEnd="8dp" />
+
                 <Button
                     android:id="@+id/addReviewBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Add Review"
-                    android:layout_marginStart="8dp" />
+                    android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add Review" />
+
             </LinearLayout>
 
             <!-- OWNER CONTROLS (View Members / Create Event) -->

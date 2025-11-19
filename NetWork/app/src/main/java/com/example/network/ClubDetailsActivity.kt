@@ -236,7 +236,6 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         // 2. Check if the current user is a regular member
         else if (isMember) {
             joinClubBtn.text = "LEAVE CLUB"
-            joinClubBtn.setBackgroundResource(android.R.color.darker_gray)
             joinClubBtn.isEnabled = true
             ownerControlsLayout.visibility = View.GONE
         }
