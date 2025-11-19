@@ -24,11 +24,18 @@ import android.view.View
 import android.widget.LinearLayout
 import com.example.network.adapters.MediaAdapter
 import com.example.network.model.Media
+import com.example.network.utils.SessionManager
 
 class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var repository: DatabaseRepository
+
+    private lateinit var sessionManager: SessionManager
     private var clubId: Int = -1
+    private var userId: Int = -1
+
+    private lateinit var joinClubBtn: Button
+    private var isMember: Boolean = false
 
     private lateinit var clubNameText: TextView
     private lateinit var clubSportText: TextView
@@ -55,6 +62,9 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_club_details)
+
+        sessionManager = SessionManager(this) // NEW: Initialize session manager
+        userId = sessionManager.getUserId()
 
         repository = DatabaseRepository(this)
 
@@ -86,6 +96,10 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
             intent.putExtra("club_id", clubId)
             addReviewLauncher.launch(intent)
         }
+
+        joinClubBtn.setOnClickListener {
+            handleJoinLeaveClub()
+        }
     }
 
     private fun bindViews() {
@@ -102,6 +116,7 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         mediaRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         mediaTitle = findViewById(R.id.mediaTitle)
         mediaSectionContainer = findViewById(R.id.mediaSectionContainer)
+        joinClubBtn = findViewById(R.id.joinClubBtn)
     }
 
     private fun loadClubData() {
@@ -109,6 +124,7 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
             val club: Club? = repository.getClubById(clubId)
             val reviews: List<Review> = repository.getReviewsByClub(clubId)
             val mediaList: List<Media> = repository.getClubMediaWorkaround(clubId)
+            val currentIsMember = repository.isUserMemberOfClub(clubId, userId)
 
             runOnUiThread {
                 if (club == null) {
@@ -126,6 +142,9 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 clubLocation = LatLng(club.locationLat, club.locationLong)
                 updateMapLocation()
 
+                isMember = currentIsMember
+                updateJoinButton(club.ownerId)
+
                 reviewsRecycler.adapter = ReviewAdapter(reviews)
 
                 if (mediaList.isNotEmpty()) {
@@ -135,6 +154,49 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 } else {
                     // Set container GONE when empty
                     mediaSectionContainer.visibility = View.GONE
+                }
+            }
+        }.start()
+    }
+
+    private fun updateJoinButton(ownerId: Int) {
+        // 1. Check if the current user is the owner
+        if (userId == ownerId) {
+            joinClubBtn.text = "CLUB OWNER"
+            joinClubBtn.isEnabled = false // Owner can't join/leave their own club this way
+        }
+        // 2. Check if the current user is a regular member
+        else if (isMember) {
+            joinClubBtn.text = "LEAVE CLUB"
+            joinClubBtn.setBackgroundResource(android.R.color.darker_gray)
+            joinClubBtn.isEnabled = true
+        }
+        // 3. User is not the owner and not a member
+        else {
+            joinClubBtn.text = "JOIN CLUB"
+            joinClubBtn.isEnabled = true
+        }
+    }
+
+    private fun handleJoinLeaveClub() {
+        // Disable button to prevent double click
+        joinClubBtn.isEnabled = false
+
+        Thread {
+            val success = if (isMember) {
+                repository.leaveClub(clubId, userId)
+            } else {
+                repository.joinClub(clubId, userId)
+            }
+
+            runOnUiThread {
+                if (success) {
+                    Toast.makeText(this, if (isMember) "Left club successfully" else "Joined club successfully!", Toast.LENGTH_SHORT).show()
+                    // Reload data to update button state and member count
+                    loadClubData()
+                } else {
+                    Toast.makeText(this, "Action failed. Please try again.", Toast.LENGTH_SHORT).show()
+                    joinClubBtn.isEnabled = true // Re-enable if failure
                 }
             }
         }.start()

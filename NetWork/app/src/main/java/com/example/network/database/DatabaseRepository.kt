@@ -146,17 +146,88 @@ class DatabaseRepository(context: Context) {
     // CLUB OPERATIONS
     // ============================================
 
+    // In DatabaseRepository.kt
+
     fun createClub(name: String, description: String?, sportType: String,
                    locationLat: Double, locationLong: Double, ownerId: Int): Long {
-        val values = ContentValues().apply {
-            put("name", name)
-            put("description", description)
-            put("sport_type", sportType)
-            put("location_lat", locationLat)
-            put("location_long", locationLong)
-            put("owner_id", ownerId)
+        var clubId: Long = -1L
+        db.beginTransaction() // Start transaction
+        try {
+            // 1. Create the Club
+            val clubValues = ContentValues().apply {
+                put("name", name)
+                put("description", description)
+                put("sport_type", sportType)
+                put("location_lat", locationLat)
+                put("location_long", locationLong)
+                put("owner_id", ownerId)
+            }
+            clubId = db.insert("Clubs", null, clubValues)
+
+            if (clubId > 0) {
+                // 2. Automatically enroll the Owner as a member
+                val membershipValues = ContentValues().apply {
+                    put("club_id", clubId)
+                    put("user_id", ownerId)
+                }
+                db.insert("Club_Membership", null, membershipValues)
+            }
+
+            db.setTransactionSuccessful() // Commit if successful
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            db.endTransaction()
         }
-        return db.insert("Clubs", null, values)
+        return clubId
+    }
+
+    fun joinClub(clubId: Int, userId: Int): Boolean {
+        val values = ContentValues().apply {
+            put("club_id", clubId)
+            put("user_id", userId)
+        }
+        // CONFLICT_IGNORE ensures a user can't be added twice
+        return db.insertWithOnConflict("Club_Membership", null, values,
+            SQLiteDatabase.CONFLICT_IGNORE) != -1L
+    }
+
+    fun leaveClub(clubId: Int, userId: Int): Boolean {
+        // Prevent owner from leaving via this method (optional but good practice)
+        // Note: A more complex query could check for ownership first. For now, rely on UI check.
+        return db.delete(
+            "Club_Membership",
+            "club_id = ? AND user_id = ?",
+            arrayOf(clubId.toString(), userId.toString())
+        ) > 0
+    }
+
+    fun getClubMemberCount(clubId: Int): Int {
+        val cursor = db.rawQuery(
+            """
+            SELECT COUNT(user_id) 
+            FROM Club_Membership 
+            WHERE club_id = ?
+        """.trimIndent(),
+            arrayOf(clubId.toString())
+        )
+
+        val count = if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        cursor.close()
+        return count
+    }
+
+    fun isUserMemberOfClub(clubId: Int, userId: Int): Boolean {
+        val cursor = db.query(
+            "Club_Membership",
+            arrayOf("user_id"),
+            "club_id = ? AND user_id = ?",
+            arrayOf(clubId.toString(), userId.toString()),
+            null, null, null
+        )
+        val isMember = cursor.count > 0
+        cursor.close()
+        return isMember
     }
 
     fun getAllClubs(): List<Club> {

@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class DatabaseHelper (context: Context) : SQLiteOpenHelper(
-    context, "NetWork.db", null, 2
+    context, "NetWork.db", null, 3
 ){
     override fun onCreate(db: SQLiteDatabase) {
 
@@ -125,17 +125,30 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        when (oldVersion) {
-            1 -> {
-                // Upgrade from version 1 to 2
-                // Example: Add a new column to an existing table
-                db.execSQL("ALTER TABLE Users ADD COLUMN profile_image_path TEXT")
-                // If you added a new table in version 2, make sure it is created here too.
-                // Example: db.execSQL(CREATE_TABLE_NEW_TABLE)
+        // Version 1 to 2 Upgrade: Added profile_image_path
+        if (oldVersion < 2) {
+            // NOTE: The previous version (v1) code already handled this update:
+            db.execSQL("ALTER TABLE Users ADD COLUMN profile_image_path TEXT")
+            // If your current DB version is 2, you don't need this, but for safety
+            // if oldVersion was 1, you'd execute the change to get to version 2.
+        }
 
-                // FALL-THROUGH to the next version's upgrade code to ensure
-                // users upgrading from version 1 to a version > 2 get all updates
-            }
+        // Version 2 to 3 Upgrade: Added Club_Membership table
+        if (oldVersion < 3) {
+            // You only need to create the table here.
+            // The ALTER TABLE command for v2 (profile_image_path) should NOT be repeated here.
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS Club_Membership (
+                    club_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    joined_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (club_id, user_id),
+                    FOREIGN KEY (club_id) REFERENCES Clubs(club_id) ON DELETE CASCADE,
+                    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+                )
+            """
+            )
         }
     }
 }
