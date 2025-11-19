@@ -60,6 +60,37 @@
             android:contentDescription="@string/review_media_image"
             tools:src="@tools:sample/backgrounds/scenic" />
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/audioContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:background="#F0F0F0"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/audioPlayPauseIcon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_play_arrow"  app:tint="@android:color/holo_blue_dark"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:id="@+id/audioLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Voice Note Attached"
+                android:textColor="@android:color/black"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/audioPlayPauseIcon"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

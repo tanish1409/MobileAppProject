@@ -50,27 +50,33 @@
           android:gravity="top"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/recordVoiceNoteBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="24dp">
+        android:text="RECORD VOICE NOTE"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#FF5722" /> <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:layout_marginTop="24dp">
 
-      <Button
-          android:id="@+id/cancelReviewBtn"
-          android:layout_width="0dp"
-          android:layout_height="wrap_content"
-          android:layout_weight="1"
-          android:text="Cancel"
-          android:layout_marginEnd="8dp"/>
+    <Button
+        android:id="@+id/cancelReviewBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Cancel"
+        android:layout_marginEnd="8dp"/>
 
-      <Button
-          android:id="@+id/submitReviewBtn"
-          android:layout_width="0dp"
-          android:layout_height="wrap_content"
-          android:layout_weight="1"
-          android:text="Submit" />
-    </LinearLayout>
+    <Button
+        android:id="@+id/submitReviewBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Submit" />
+  </LinearLayout>
   </LinearLayout>
 
 </LinearLayout>
