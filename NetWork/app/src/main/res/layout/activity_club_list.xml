@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     android:layout_width="match_parent"
@@ -14,11 +15,36 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"/>
 
-    <Button
-        android:id="@+id/createClubBtn"
-        android:text="Create Club"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxBackgroundMode="outline"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/searchClubField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search Clubs"
+            android:inputType="text"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/createClubBtn"
+        android:text="CREATE CLUB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cornerRadius="8dp"
         android:layout_marginBottom="12dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -27,11 +53,13 @@
         android:layout_height="0dp"
         android:layout_weight="1"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/backBtn"
-        android:text="Back to Home"
+        android:text="BACK TO HOME"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:cornerRadius="8dp"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_marginTop="12dp"/>
 
 </LinearLayout>

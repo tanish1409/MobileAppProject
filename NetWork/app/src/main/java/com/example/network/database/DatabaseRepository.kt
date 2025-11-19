@@ -671,8 +671,7 @@ class DatabaseRepository(context: Context) {
         }
     }
 
-    // WARNING: This function exploits the temporary data integrity flaw where
-    // clubId was incorrectly saved into the event_id column of the Media table.
+    //TODO: Fix event_id to become club_id
     fun getClubMediaWorkaround(clubId: Int): List<Media> {
         val mediaList = mutableListOf<Media>()
         val cursor = db.query(

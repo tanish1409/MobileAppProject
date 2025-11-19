@@ -9,7 +9,7 @@ import com.example.network.R
 import com.example.network.model.Club
 
 class ClubAdapter(
-    private val clubs: List<Club>,
+    private var clubs: List<Club>,
     private val onClubClick: (Club) -> Unit
 ) : RecyclerView.Adapter<ClubAdapter.ClubViewHolder>() {
 
@@ -35,6 +35,11 @@ class ClubAdapter(
         holder.itemView.setOnClickListener {
             onClubClick(club)
         }
+    }
+
+    fun updateData(newClubs: List<Club>) {
+        clubs = newClubs
+        notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int = clubs.size
