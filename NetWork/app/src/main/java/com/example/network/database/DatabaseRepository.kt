@@ -490,6 +490,19 @@ class DatabaseRepository(context: Context) {
         return events
     }
 
+    fun isUserAttendingEvent(eventId: Int, userId: Int): Boolean {
+        val cursor = db.query(
+            "Event_Attendance",
+            arrayOf("user_id"),
+            "event_id = ? AND user_id = ?",
+            arrayOf(eventId.toString(), userId.toString()),
+            null, null, null
+        )
+        val isAttending = cursor.count > 0
+        cursor.close()
+        return isAttending
+    }
+
     // ============================================
     // REVIEW OPERATIONS
     // ============================================

@@ -172,6 +172,23 @@
                     app:cornerRadius="8dp"/>
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/eventsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Upcoming Events"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/eventsRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/event_list_item" />
+
             <!-- Back Button -->
             <Button
                 android:id="@+id/backBtn"

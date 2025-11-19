@@ -25,6 +25,8 @@ import android.widget.LinearLayout
 import com.example.network.adapters.MediaAdapter
 import com.example.network.model.Media
 import com.example.network.utils.SessionManager
+import com.example.network.adapters.EventAdapter
+import com.example.network.model.Event
 
 class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -44,6 +46,7 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var clubMembersText: TextView
 
     private lateinit var reviewsRecycler: RecyclerView
+    private lateinit var eventsRecycler: RecyclerView
 
     private var mMap: GoogleMap? = null
     private var clubLocation: LatLng? = null
@@ -118,6 +121,9 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         mediaTitle = findViewById(R.id.mediaTitle)
         mediaSectionContainer = findViewById(R.id.mediaSectionContainer)
 
+        eventsRecycler = findViewById(R.id.eventsRecycler)
+        eventsRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
         // Set standard listeners once
         findViewById<Button>(R.id.addReviewBtn).setOnClickListener {
             val intent = Intent(this, AddReviewActivity::class.java)
@@ -140,6 +146,7 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
             val reviews: List<Review> = repository.getReviewsByClub(clubId)
             val mediaList: List<Media> = repository.getClubMediaWorkaround(clubId)
             val currentIsMember = repository.isUserMemberOfClub(clubId, userId)
+            val clubEvents: List<Event> = repository.getEventsByClub(clubId)
 
             runOnUiThread {
                 if (club == null) {
@@ -161,6 +168,14 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 updateClubActionButtons(club.ownerId, club.name)
 
                 reviewsRecycler.adapter = ReviewAdapter(reviews)
+                // Setup Events Adapter with dynamic callbacks
+                val eventAdapter = EventAdapter(
+                    events = clubEvents,
+                    userId = userId,
+                    joinLeaveListener = ::handleJoinLeaveEvent, // Pass the handler function
+                    isUserAttendingChecker = repository::isUserAttendingEvent // Pass the repo check function
+                )
+                eventsRecycler.adapter = eventAdapter
 
                 if (mediaList.isNotEmpty()) {
                     mediaRecycler.adapter = MediaAdapter(mediaList)
@@ -238,6 +253,31 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 } else {
                     Toast.makeText(this, "Action failed. Please try again.", Toast.LENGTH_SHORT).show()
                     joinClubBtn.isEnabled = true // Re-enable if failure
+                }
+            }
+        }.start()
+    }
+
+    private fun handleJoinLeaveEvent(event: Event) {
+        // Determine current status using the repository function
+        val isCurrentlyAttending = repository.isUserAttendingEvent(event.eventId, userId)
+        val actionText = if (isCurrentlyAttending) "Leave" else "Join"
+
+        Thread {
+            val success = if (isCurrentlyAttending) {
+                // If attending, leave the event
+                repository.leaveEvent(event.eventId, userId)
+            } else {
+                // If not attending, join the event
+                repository.joinEvent(event.eventId, userId, "joined")
+            }
+
+            runOnUiThread {
+                if (success) {
+                    Toast.makeText(this, "Successfully $actionText event!", Toast.LENGTH_SHORT).show()
+                    loadClubData() // Reload to update button states and participant counts
+                } else {
+                    Toast.makeText(this, "Failed to $actionText event. Try again.", Toast.LENGTH_SHORT).show()
                 }
             }
         }.start()
