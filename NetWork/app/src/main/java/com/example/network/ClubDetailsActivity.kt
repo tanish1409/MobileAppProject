@@ -1,83 +1,66 @@
 package com.example.network
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.network.ReviewAdapter
+import com.example.network.adapters.EventAdapter
+import com.example.network.adapters.MediaAdapter
 import com.example.network.database.DatabaseRepository
-import com.example.network.model.Club
-import com.example.network.model.Review
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.example.network.model.*
+import com.example.network.utils.SessionManager
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import android.view.View
-import android.widget.LinearLayout
-import com.example.network.adapters.MediaAdapter
-import com.example.network.model.Media
-import com.example.network.utils.SessionManager
-import com.example.network.adapters.EventAdapter
-import com.example.network.model.Event
 
 class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var repository: DatabaseRepository
-
     private lateinit var sessionManager: SessionManager
+
     private var clubId: Int = -1
     private var userId: Int = -1
-
-    private lateinit var joinClubBtn: Button
     private var isMember: Boolean = false
 
+    private var mMap: GoogleMap? = null
+    private var clubLocation: LatLng? = null
+
+    // UI
     private lateinit var clubNameText: TextView
     private lateinit var clubSportText: TextView
     private lateinit var clubDescriptionText: TextView
     private lateinit var clubRatingText: TextView
     private lateinit var clubMembersText: TextView
+    private lateinit var joinClubBtn: Button
 
     private lateinit var reviewsRecycler: RecyclerView
     private lateinit var eventsRecycler: RecyclerView
 
-    private var mMap: GoogleMap? = null
-    private var clubLocation: LatLng? = null
-
     private lateinit var mediaRecycler: RecyclerView
-    private lateinit var mediaTitle: TextView
     private lateinit var mediaSectionContainer: LinearLayout
 
     private lateinit var viewMembersBtn: Button
     private lateinit var createEventBtn: Button
+    private lateinit var deleteClubBtn: Button
     private lateinit var ownerControlsLayout: LinearLayout
 
-    private val addReviewLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            Toast.makeText(this, "Refreshing reviews...", Toast.LENGTH_SHORT).show()
-            loadClubData()
-        }
+    // Launchers
+    private val addReviewLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == Activity.RESULT_OK) loadClubData()
     }
 
-    private val createEventLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            Toast.makeText(this, "Event created. Refreshing list...", Toast.LENGTH_LONG).show()
-            loadClubData()
-        }
+    private val createEventLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == Activity.RESULT_OK) loadClubData()
     }
 
-    // Launcher to refresh data if we return from EventDetails (useful if capacity changed)
-    private val eventDetailsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            loadClubData()
-        }
+    private val eventDetailsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == Activity.RESULT_OK) loadClubData()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,19 +70,18 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         sessionManager = SessionManager(this)
         userId = sessionManager.getUserId()
 
-        repository = DatabaseRepository(this)
-
         clubId = intent.getIntExtra("club_id", -1)
         if (clubId == -1) {
-            Toast.makeText(this, "No club selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Invalid Club ID", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
+        repository = DatabaseRepository(this)
+
         bindViews()
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.clubDetailsMap) as SupportMapFragment
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.clubDetailsMap) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         loadClubData()
@@ -113,46 +95,40 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         clubMembersText = findViewById(R.id.clubMembersText)
         joinClubBtn = findViewById(R.id.joinClubBtn)
 
-        // Owner Controls
         viewMembersBtn = findViewById(R.id.viewMembersBtn)
         createEventBtn = findViewById(R.id.createEventBtn)
+        deleteClubBtn = findViewById(R.id.deleteClubBtn)
         ownerControlsLayout = findViewById(R.id.ownerControlsLayout)
-
-        // Event Recycler Bind and Setup
-        eventsRecycler = findViewById(R.id.eventsRecycler)
-        eventsRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
         reviewsRecycler = findViewById(R.id.reviewsRecycler)
         reviewsRecycler.layoutManager = LinearLayoutManager(this)
 
+        eventsRecycler = findViewById(R.id.eventsRecycler)
+        eventsRecycler.layoutManager = LinearLayoutManager(this)
+
         mediaRecycler = findViewById(R.id.mediaRecycler)
         mediaRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        mediaTitle = findViewById(R.id.mediaTitle)
+
         mediaSectionContainer = findViewById(R.id.mediaSectionContainer)
 
-        // Set standard listeners once
+        findViewById<Button>(R.id.backBtn).setOnClickListener { finish() }
+
         findViewById<Button>(R.id.addReviewBtn).setOnClickListener {
             val intent = Intent(this, AddReviewActivity::class.java)
             intent.putExtra("club_id", clubId)
             addReviewLauncher.launch(intent)
         }
 
-        joinClubBtn.setOnClickListener {
-            handleJoinLeaveClub()
-        }
-
-        findViewById<Button>(R.id.backBtn).setOnClickListener {
-            finish()
-        }
+        joinClubBtn.setOnClickListener { handleJoinLeaveClub() }
     }
 
     private fun loadClubData() {
         Thread {
-            val club: Club? = repository.getClubById(clubId)
-            val reviews: List<Review> = repository.getReviewsByClub(clubId)
-            val mediaList: List<Media> = repository.getClubMediaWorkaround(clubId)
-            val currentIsMember = repository.isUserMemberOfClub(clubId, userId)
-            val clubEvents: List<Event> = repository.getEventsByClub(clubId)
+            val club = repository.getClubById(clubId)
+            val reviews = repository.getReviewsByClub(clubId)
+            val mediaList = repository.getClubMediaWorkaround(clubId)
+            val events = repository.getEventsByClub(clubId)
+            val userIsMember = repository.isUserMemberOfClub(clubId, userId)
 
             runOnUiThread {
                 if (club == null) {
@@ -161,94 +137,97 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                     return@runOnUiThread
                 }
 
+                isMember = userIsMember
+
                 clubNameText.text = club.name
                 clubSportText.text = club.sportType
                 clubDescriptionText.text = club.description ?: "No description"
-                clubRatingText.text = if (club.rating > 0) String.format("%.1f", club.rating) else "N/A"
+                clubRatingText.text = if (club.rating > 0) "%.1f".format(club.rating) else "N/A"
                 clubMembersText.text = club.memberCount.toString()
 
                 clubLocation = LatLng(club.locationLat, club.locationLong)
                 updateMapLocation()
 
-                isMember = currentIsMember
-                updateClubActionButtons(club.ownerId, club.name)
-
                 reviewsRecycler.adapter = ReviewAdapter(reviews)
-                // Setup Events Adapter with dynamic callbacks
-                val eventAdapter = EventAdapter(
-                    events = clubEvents,
-                    userId = userId,
-                    joinLeaveListener = ::handleJoinLeaveEvent, // For the button click
-                    isUserAttendingChecker = repository::isUserAttendingEvent, // For button state
-                    onItemClickListener = ::handleEventItemClick
-                )
-                eventsRecycler.adapter = eventAdapter
+
+                eventsRecycler.adapter = EventAdapter(
+                    events,
+                    userId,
+                    joinLeaveListener = ::handleJoinLeaveEvent,
+                    isUserAttendingChecker = repository::isUserAttendingEvent
+                ) { event ->
+                    val i = Intent(this, EventDetailsActivity::class.java)
+                    i.putExtra("event_id", event.eventId)
+                    eventDetailsLauncher.launch(i)
+                }
 
                 if (mediaList.isNotEmpty()) {
                     mediaRecycler.adapter = MediaAdapter(mediaList)
-                    // Only set container VISIBLE
                     mediaSectionContainer.visibility = View.VISIBLE
                 } else {
-                    // Set container GONE when empty
                     mediaSectionContainer.visibility = View.GONE
                 }
+
+                updateOwnerAndMemberUI(club)
             }
         }.start()
     }
 
-    // Function to handle the full event item click: LAUNCHES EVENT DETAILS
-    private fun handleEventItemClick(event: Event) {
-        val intent = Intent(this, EventDetailsActivity::class.java)
-        intent.putExtra("event_id", event.eventId)
-        eventDetailsLauncher.launch(intent) // Use the new launcher
-    }
+    private fun updateOwnerAndMemberUI(club: Club) {
+        when {
+            userId == club.ownerId -> {
+                joinClubBtn.text = "CLUB OWNER"
+                joinClubBtn.isEnabled = false
 
-    // Handles JOIN/LEAVE, VIEW MEMBERS, and CREATE EVENT
-    private fun updateClubActionButtons(ownerId: Int, clubName: String?) {
-        // 1. Check if the current user is the owner
-        if (userId == ownerId) {
-            joinClubBtn.text = "CLUB OWNER"
-            joinClubBtn.isEnabled = false
+                ownerControlsLayout.visibility = View.VISIBLE
+                viewMembersBtn.visibility = View.VISIBLE
+                createEventBtn.visibility = View.VISIBLE
+                deleteClubBtn.visibility = View.VISIBLE
 
-            // Show owner controls container
-            ownerControlsLayout.visibility = View.VISIBLE
-            viewMembersBtn.visibility = View.VISIBLE
-            createEventBtn.visibility = View.VISIBLE
-
-            // Set up View Members Click Listener
-            viewMembersBtn.setOnClickListener {
-                val intent = Intent(this, ClubMembersActivity::class.java).apply {
-                    putExtra("club_id", clubId)
-                    putExtra("owner_id", ownerId)
+                viewMembersBtn.setOnClickListener {
+                    val i = Intent(this, ClubMembersActivity::class.java)
+                    i.putExtra("club_id", clubId)
+                    i.putExtra("owner_id", club.ownerId)
+                    startActivity(i)
                 }
-                startActivity(intent)
+
+                createEventBtn.setOnClickListener {
+                    val i = Intent(this, CreateEventActivity::class.java)
+                    i.putExtra("club_id", clubId)
+                    i.putExtra("club_name", club.name)
+                    createEventLauncher.launch(i)
+                }
+
+                deleteClubBtn.setOnClickListener {
+                    AlertDialog.Builder(this)
+                        .setTitle("Delete Club?")
+                        .setMessage("This action cannot be undone.")
+                        .setPositiveButton("Delete") { _, _ ->
+                            if (repository.deleteClub(clubId, userId)) {
+                                Toast.makeText(this, "Club deleted.", Toast.LENGTH_SHORT).show()
+                                finish()
+                            }
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
             }
 
-            // Set up Create Event Click Listener
-            createEventBtn.setOnClickListener {
-                val intent = Intent(this, CreateEventActivity::class.java).apply {
-                    putExtra("club_id", clubId)
-                    putExtra("club_name", clubName)
-                }
-                createEventLauncher.launch(intent)
+            isMember -> {
+                joinClubBtn.text = "LEAVE CLUB"
+                joinClubBtn.isEnabled = true
+                ownerControlsLayout.visibility = View.GONE
             }
-        }
-        // 2. Check if the current user is a regular member
-        else if (isMember) {
-            joinClubBtn.text = "LEAVE CLUB"
-            joinClubBtn.isEnabled = true
-            ownerControlsLayout.visibility = View.GONE
-        }
-        // 3. User is not the owner and not a member
-        else {
-            joinClubBtn.text = "JOIN CLUB"
-            joinClubBtn.isEnabled = true
-            ownerControlsLayout.visibility = View.GONE
+
+            else -> {
+                joinClubBtn.text = "JOIN CLUB"
+                joinClubBtn.isEnabled = true
+                ownerControlsLayout.visibility = View.GONE
+            }
         }
     }
 
     private fun handleJoinLeaveClub() {
-        // Disable button to prevent double click
         joinClubBtn.isEnabled = false
 
         Thread {
@@ -259,40 +238,25 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             runOnUiThread {
-                if (success) {
-                    Toast.makeText(this, if (isMember) "Left club successfully" else "Joined club successfully!", Toast.LENGTH_SHORT).show()
-                    // Reload data to update button state and member count
-                    loadClubData()
-                } else {
-                    Toast.makeText(this, "Action failed. Please try again.", Toast.LENGTH_SHORT).show()
-                    joinClubBtn.isEnabled = true // Re-enable if failure
+                if (success) loadClubData()
+                else {
+                    Toast.makeText(this, "Action failed", Toast.LENGTH_SHORT).show()
+                    joinClubBtn.isEnabled = true
                 }
             }
         }.start()
     }
 
-    // Function to handle the join/leave event click from the adapter
     private fun handleJoinLeaveEvent(event: Event) {
-        // Determine current status using the repository function
-        val isCurrentlyAttending = repository.isUserAttendingEvent(event.eventId, userId)
-        val actionText = if (isCurrentlyAttending) "Leave" else "Join"
-
         Thread {
-            val success = if (isCurrentlyAttending) {
-                // If attending, leave the event
+            val attending = repository.isUserAttendingEvent(event.eventId, userId)
+            val success = if (attending)
                 repository.leaveEvent(event.eventId, userId)
-            } else {
-                // If not attending, join the event
-                repository.joinEvent(event.eventId, userId, "joined")
-            }
+            else
+                repository.joinEvent(event.eventId, userId)
 
             runOnUiThread {
-                if (success) {
-                    Toast.makeText(this, "Successfully $actionText event!", Toast.LENGTH_SHORT).show()
-                    loadClubData() // Reload to update button states and participant counts
-                } else {
-                    Toast.makeText(this, "Failed to $actionText event. Try again.", Toast.LENGTH_SHORT).show()
-                }
+                if (success) loadClubData()
             }
         }.start()
     }
@@ -308,13 +272,11 @@ class ClubDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         map.clear()
         map.addMarker(MarkerOptions().position(loc).title("Club Location"))
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14f))
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 15f))
     }
 
     override fun onDestroy() {
-        if (::repository.isInitialized) {
-            repository.close()
-        }
+        if (::repository.isInitialized) repository.close()
         super.onDestroy()
     }
 }

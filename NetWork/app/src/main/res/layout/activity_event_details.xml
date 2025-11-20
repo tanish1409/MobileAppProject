@@ -40,6 +40,16 @@
             android:textColor="#757575"
             android:layout_marginBottom="24dp"/>
 
+        <Button
+            android:id="@+id/deleteEventBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DELETE EVENT"
+            android:backgroundTint="#D32F2F"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"/>
+
         <!-- Details Card -->
         <LinearLayout
             android:orientation="vertical"

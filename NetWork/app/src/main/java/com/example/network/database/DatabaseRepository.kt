@@ -571,6 +571,27 @@ class DatabaseRepository(context: Context) {
         return clubs
     }
 
+    fun deleteEvent(eventId: Int, hostId: Int): Boolean {
+        val cursor = db.query(
+            "Events",
+            arrayOf("host_id"),
+            "event_id = ?",
+            arrayOf(eventId.toString()),
+            null, null, null
+        )
+
+        val isHost = cursor.moveToFirst() && cursor.getInt(0) == hostId
+        cursor.close()
+
+        if (!isHost) return false
+
+        return db.delete(
+            "Events",
+            "event_id = ?",
+            arrayOf(eventId.toString())
+        ) > 0
+    }
+
     /**
      * Retrieves clubs a user has joined (is a member of, excluding clubs they own).
      */
@@ -590,6 +611,17 @@ class DatabaseRepository(context: Context) {
         }
         cursor.close()
         return clubs
+    }
+
+    fun deleteClub(clubId: Int, ownerId: Int): Boolean {
+        // Make sure only the owner can delete
+        if (!isUserClubOwner(ownerId, clubId)) return false
+
+        return db.delete(
+            "Clubs",
+            "club_id = ?",
+            arrayOf(clubId.toString())
+        ) > 0
     }
 
     // ============================================

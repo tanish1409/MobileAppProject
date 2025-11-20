@@ -1,23 +1,28 @@
 package com.example.network
 
+import android.app.Activity
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.network.adapters.UserAdapter // Reusing UserAdapter
+import com.example.network.adapters.UserAdapter
 import com.example.network.database.DatabaseRepository
-import com.example.network.utils.SessionManager
 import com.example.network.model.Event
+import com.example.network.utils.SessionManager
 
 class EventDetailsActivity : AppCompatActivity() {
 
     private lateinit var repository: DatabaseRepository
     private lateinit var sessionManager: SessionManager
+
     private var eventId: Int = -1
 
+    // Views
     private lateinit var eventDetailTitle: TextView
     private lateinit var eventDetailDateTime: TextView
     private lateinit var eventDetailClubHost: TextView
@@ -25,6 +30,7 @@ class EventDetailsActivity : AppCompatActivity() {
     private lateinit var eventDetailParticipants: TextView
     private lateinit var attendeeListTitle: TextView
     private lateinit var attendeeRecycler: RecyclerView
+    private lateinit var deleteEventBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,12 +41,13 @@ class EventDetailsActivity : AppCompatActivity() {
 
         eventId = intent.getIntExtra("event_id", -1)
         if (eventId == -1) {
-            Toast.makeText(this, "Event ID missing.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Event ID missing", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
         bindViews()
+        setupDeleteLogic()
         findViewById<Button>(R.id.backBtn).setOnClickListener { finish() }
 
         loadEventDetails()
@@ -56,51 +63,78 @@ class EventDetailsActivity : AppCompatActivity() {
 
         attendeeRecycler = findViewById(R.id.attendeeRecycler)
         attendeeRecycler.layoutManager = LinearLayoutManager(this)
+
+        deleteEventBtn = findViewById(R.id.deleteEventBtn)
+    }
+
+    private fun setupDeleteLogic() {
+        deleteEventBtn.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Delete Event")
+                .setMessage("Are you sure you want to permanently delete this event?")
+                .setPositiveButton("Delete") { _, _ ->
+                    val success = repository.deleteEvent(eventId, sessionManager.getUserId())
+
+                    if (success) {
+                        Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show()
+
+                        // ⭐ IMPORTANT: Tell ClubDetailsActivity to refresh
+                        setResult(Activity.RESULT_OK)
+
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Unable to delete event", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
     }
 
     private fun loadEventDetails() {
         Thread {
-            val event: Event? = repository.getEventById(eventId)
+            val event = repository.getEventById(eventId)
 
             if (event == null) {
                 runOnUiThread {
-                    Toast.makeText(this, "Event not found.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show()
                     finish()
                 }
                 return@Thread
             }
 
-            // Fetch related club to display host name
             val club = repository.getClubById(event.clubId)
-
-            // Fetch attendees
             val attendees = repository.getEventAttendees(eventId)
+            val currentUserId = sessionManager.getUserId()
 
             runOnUiThread {
+
+                // Show delete button ONLY for event host
+                deleteEventBtn.visibility =
+                    if (event.hostId == currentUserId) View.VISIBLE else View.GONE
+
                 eventDetailTitle.text = event.title
                 eventDetailDateTime.text = "${event.date} at ${event.time}"
                 eventDetailClubHost.text = "Hosted by: ${club?.name ?: "Unknown Club"}"
-                eventDetailDescription.text = event.description ?: "No description provided."
-                eventDetailParticipants.text = "Capacity: ${event.currentParticipants} / ${event.maxParticipants}"
+                eventDetailDescription.text = event.description ?: "No description provided"
+                eventDetailParticipants.text =
+                    "Participants: ${event.currentParticipants} / ${event.maxParticipants}"
 
-                // Set up the Attendee List
                 attendeeListTitle.text = "Attendees (${attendees.size})"
 
-                // Use the existing UserAdapter to display attendees
-                val adapter = UserAdapter(
+                attendeeRecycler.adapter = UserAdapter(
                     attendees,
-                    onUserClick = {Toast.makeText(this, "This is a user profile", Toast.LENGTH_SHORT).show()},
-                    onRemoveFriend = {}
+                    onUserClick = { user ->
+                        Toast.makeText(this, "User: ${user.name}", Toast.LENGTH_SHORT).show()
+                    },
+                    onRemoveFriend = {} // No remove friend button here
                 )
-                attendeeRecycler.adapter = adapter
             }
         }.start()
     }
 
     override fun onDestroy() {
-        if (::repository.isInitialized) {
-            repository.close()
-        }
+        if (::repository.isInitialized) repository.close()
         super.onDestroy()
     }
 }

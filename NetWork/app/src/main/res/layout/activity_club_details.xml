@@ -172,6 +172,18 @@
                     android:textColor="#FF9800"
                     app:strokeColor="#FF9800"
                     app:cornerRadius="8dp"/>
+
+                <Button
+                    android:id="@+id/deleteClubBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="DELETE CLUB"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp"
+                    android:backgroundTint="#D32F2F"
+                    android:textColor="@android:color/white"
+                    android:padding="10dp"
+                    app:cornerRadius="8dp"/>
             </LinearLayout>
 
             <TextView
