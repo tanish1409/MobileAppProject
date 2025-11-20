@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class DatabaseHelper (context: Context) : SQLiteOpenHelper(
-    context, "NetWork.db", null, 3
+    context, "NetWork.db", null, 4
 ){
     override fun onCreate(db: SQLiteDatabase) {
 
@@ -121,6 +121,18 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
                 )
             """
         )
+
+        // -- CLUB MEMBERSHIP
+        db.execSQL("""
+        CREATE TABLE IF NOT EXISTS Club_Membership (
+            club_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            joined_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (club_id, user_id),
+            FOREIGN KEY (club_id) REFERENCES Clubs(club_id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+        )
+    """)
 
     }
 
