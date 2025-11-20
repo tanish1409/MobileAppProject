@@ -15,6 +15,7 @@ import android.media.MediaPlayer
 import android.widget.Button
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import java.io.File
 
 class ReviewAdapter(
     private var reviews: List<Review>
@@ -145,30 +146,38 @@ class ReviewAdapter(
         }
     }
 
-    private fun playAudio(url: String, iconView: ImageView) {
-        mediaPlayer?.release()
-        mediaPlayer = null
-
+    private fun playAudio(path: String, iconView: ImageView) {
         try {
+            mediaPlayer?.release()
+            mediaPlayer = null
+
+            val file = File(path)
+            if (!file.exists()) {
+                Toast.makeText(iconView.context, "Audio file not found.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
             mediaPlayer = MediaPlayer().apply {
-                setDataSource(url)
-                prepareAsync()
+                val uri = Uri.fromFile(file)
+                setDataSource(iconView.context, uri)
                 setOnPreparedListener { mp ->
                     mp.start()
-                    currentlyPlayingUrl = url
+                    currentlyPlayingUrl = path
                     iconView.setImageResource(R.drawable.ic_pause)
                     notifyDataSetChanged()
                 }
-                // Handle completion
-                setOnCompletionListener { mp ->
-                    mp.release()
+                setOnCompletionListener {
+                    release()
                     mediaPlayer = null
                     currentlyPlayingUrl = null
-                    notifyDataSetChanged() // Refresh UI to show play icon
+                    notifyDataSetChanged()
                 }
+                prepareAsync()
             }
+
         } catch (e: Exception) {
-            // Log error, toast user
+            Toast.makeText(iconView.context, "Playback error: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
         }
     }
 

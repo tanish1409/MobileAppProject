@@ -104,14 +104,17 @@ class FriendsActivity : AppCompatActivity() {
                     friendsRecycler.visibility = View.VISIBLE
 
                     if (friendsAdapter == null) {
-                        friendsAdapter = UserAdapter(friendUsers) { user ->
-                            Toast.makeText(
-                                this,
-                                "Clicked on ${user.name}",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            // TODO: open profile etc
-                        }
+                        friendsAdapter = UserAdapter(
+                            friendUsers,
+                            onUserClick = { user ->
+                                // handle clicking friend (optional)
+                                Toast.makeText(this, "Clicked ${user.name}", Toast.LENGTH_SHORT).show()
+                            },
+                            onRemoveFriend = { user ->
+                                removeFriend(user)
+                            },
+                            showRemoveButton = true
+                        )
                         friendsRecycler.adapter = friendsAdapter
                     } else {
                         friendsAdapter?.updateData(friendUsers)
@@ -166,6 +169,21 @@ class FriendsActivity : AppCompatActivity() {
                         "Failed to reject request.",
                         Toast.LENGTH_SHORT
                     ).show()
+                }
+            }
+        }.start()
+    }
+
+    private fun removeFriend(user: User) {
+        Thread {
+            val success = repository.removeFriend(userId, user.userId)
+
+            runOnUiThread {
+                if (success) {
+                    Toast.makeText(this, "Removed ${user.name}.", Toast.LENGTH_SHORT).show()
+                    loadFriendData() // refresh UI
+                } else {
+                    Toast.makeText(this, "Failed to remove friend.", Toast.LENGTH_SHORT).show()
                 }
             }
         }.start()

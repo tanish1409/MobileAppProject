@@ -160,11 +160,11 @@ class AddReviewActivity : AppCompatActivity() {
     }
 
     private fun startRecording() {
-        // 1. Define output file path
-        val storageDir = getExternalFilesDir(null)
-        audioFileName = "${storageDir?.absolutePath}/${System.currentTimeMillis()}.mp3"
+        val audioDir = File(filesDir, "voice_notes")
+        if (!audioDir.exists()) audioDir.mkdirs()
 
-        // 2. Initialize MediaRecorder
+        audioFileName = File(audioDir, "${System.currentTimeMillis()}.m4a").absolutePath
+
         mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(this)
         } else {
@@ -177,16 +177,23 @@ class AddReviewActivity : AppCompatActivity() {
                 setAudioSource(MediaRecorder.AudioSource.MIC)
                 setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+
+                setAudioEncodingBitRate(128000)
+                setAudioSamplingRate(44100)
+                setAudioChannels(1)
+
                 setOutputFile(audioFileName)
                 prepare()
                 start()
             }
+
             Toast.makeText(this, "Recording started...", Toast.LENGTH_SHORT).show()
-        } catch (e: IOException) {
-            Toast.makeText(this, "Recording failed: ${e.message}", Toast.LENGTH_LONG).show()
-            mediaRecorder = null
-            audioFileName = null
+
+        } catch (e: Exception) {
             e.printStackTrace()
+            Toast.makeText(this, "Recording failed: ${e.message}", Toast.LENGTH_LONG).show()
+            audioFileName = null
+            mediaRecorder = null
         }
     }
 

@@ -66,10 +66,11 @@ class ClubMembersActivity : AppCompatActivity() {
                 }
 
                 // Initialize the adapter with the fetched members
-                val adapter = UserAdapter(members) { user ->
-                    // Action when a member is clicked (e.g., viewing their profile)
-                    Toast.makeText(this, "Tapped on ${user.name}", Toast.LENGTH_SHORT).show()
-                }
+                val adapter = UserAdapter(
+                    members,
+                    onUserClick = {Toast.makeText(this, "This is a member of the club", Toast.LENGTH_SHORT).show()},
+                    onRemoveFriend = {}
+                )
                 memberRecycler.adapter = adapter
             }
         }.start()

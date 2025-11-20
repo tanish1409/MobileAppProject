@@ -789,6 +789,29 @@ class DatabaseRepository(context: Context) {
         return friends
     }
 
+    fun removeFriend(userId: Int, friendId: Int): Boolean {
+        db.beginTransaction()
+        return try {
+            // Delete both directions
+            db.delete(
+                "Friends",
+                "user_id = ? AND friend_id = ? AND status = 'accepted'",
+                arrayOf(userId.toString(), friendId.toString())
+            )
+
+            db.delete(
+                "Friends",
+                "user_id = ? AND friend_id = ? AND status = 'accepted'",
+                arrayOf(friendId.toString(), userId.toString())
+            )
+
+            db.setTransactionSuccessful()
+            true
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     fun getPendingFriendRequests(userId: Int): List<Friend> {
         val requests = mutableListOf<Friend>()
         val cursor = db.rawQuery("""

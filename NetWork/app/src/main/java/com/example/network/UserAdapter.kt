@@ -3,20 +3,25 @@ package com.example.network.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.network.R
-import com.example.network.model.User // Assuming your User model is here
+import com.example.network.model.User
 
 class UserAdapter(
     private var users: List<User>,
-    private val clickListener: (User) -> Unit
+    private val onUserClick: (User) -> Unit,
+    private val onRemoveFriend: (User) -> Unit,
+    private val showRemoveButton: Boolean = false
 ) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
 
-    class UserViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val nameText: TextView = view.findViewById(R.id.memberNameText)
-        val locationText: TextView = view.findViewById(R.id.memberLocationText)
-        // You would typically bind the ImageView here as well
+    inner class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val userImage: ImageView = itemView.findViewById(R.id.userImage)
+        val userName: TextView = itemView.findViewById(R.id.userName)
+        val userLocation: TextView = itemView.findViewById(R.id.userLocation)
+        val removeFriendBtn: Button = itemView.findViewById(R.id.removeFriendBtn)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -27,20 +32,27 @@ class UserAdapter(
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val user = users[position]
-        holder.nameText.text = user.name
-        holder.locationText.text = user.location ?: "Unknown Location"
 
-        holder.itemView.setOnClickListener {
-            clickListener(user)
+        // Set name & location
+        holder.userName.text = user.name
+        holder.userLocation.text = user.location ?: "Unknown Location"
+
+        // Handle clicking the card
+        holder.itemView.setOnClickListener { onUserClick(user) }
+
+        if (showRemoveButton) {
+            holder.removeFriendBtn.visibility = View.VISIBLE
+            holder.removeFriendBtn.setOnClickListener {
+                onRemoveFriend(user)
+            }
+        } else {
+            holder.removeFriendBtn.visibility = View.GONE
         }
-
-        // Future idea for owner: Show the "Remove" button if the current user is the owner
-        // val removeBtn = holder.itemView.findViewById<Button>(R.id.memberActionButton)
-        // if (isOwner) { removeBtn.visibility = View.VISIBLE }
     }
 
     override fun getItemCount(): Int = users.size
 
+    // Allow updating list without recreating the adapter
     fun updateData(newUsers: List<User>) {
         users = newUsers
         notifyDataSetChanged()

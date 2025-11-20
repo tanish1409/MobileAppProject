@@ -87,10 +87,11 @@ class EventDetailsActivity : AppCompatActivity() {
                 attendeeListTitle.text = "Attendees (${attendees.size})"
 
                 // Use the existing UserAdapter to display attendees
-                val adapter = UserAdapter(attendees) { user ->
-                    Toast.makeText(this, "Viewing profile for ${user.name}", Toast.LENGTH_SHORT).show()
-                    // Start UserProfileActivity here if it existed
-                }
+                val adapter = UserAdapter(
+                    attendees,
+                    onUserClick = {Toast.makeText(this, "This is a user profile", Toast.LENGTH_SHORT).show()},
+                    onRemoveFriend = {}
+                )
                 attendeeRecycler.adapter = adapter
             }
         }.start()
