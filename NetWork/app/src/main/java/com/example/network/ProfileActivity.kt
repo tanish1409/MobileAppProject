@@ -23,6 +23,10 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var profileLocation: TextView
     private lateinit var clubsCount: TextView
     private lateinit var eventsCount: TextView
+    private lateinit var viewNetworkBtn: Button
+
+    private lateinit var addFriendBtn: Button
+
 
     private var userId: Int = -1
 
@@ -45,7 +49,7 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Reload profile data when returning from EditProfileActivity
+        // Reload profile data when returning from EditProfileActivity or FriendsActivity
         if (userId != -1) {
             loadUserProfile(userId)
         }
@@ -59,6 +63,8 @@ class ProfileActivity : AppCompatActivity() {
         profileLocation = findViewById(R.id.profileLocation)
         clubsCount = findViewById(R.id.clubsCount)
         eventsCount = findViewById(R.id.eventsCount)
+        viewNetworkBtn = findViewById(R.id.viewNetworkBtn)
+        addFriendBtn = findViewById(R.id.addFriendBtn)
     }
 
     private fun setupClickListeners() {
@@ -75,6 +81,16 @@ class ProfileActivity : AppCompatActivity() {
             val intent = Intent(this, EditProfileActivity::class.java)
             startActivity(intent)
         }
+
+        // NEW: Launch FriendsActivity
+        viewNetworkBtn.setOnClickListener {
+            val intent = Intent(this, FriendsActivity::class.java)
+            startActivity(intent)
+        }
+        addFriendBtn.setOnClickListener {
+            val intent = Intent(this, AddFriendActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun loadUserProfile(userId: Int) {
@@ -83,6 +99,9 @@ class ProfileActivity : AppCompatActivity() {
             val profileImagePath = repository.getUserProfileImage(userId)
             val ownedClubCount = repository.getUserClubCount(userId)
             val userEventCount = repository.getUserEventCount(userId)
+
+            // NEW: Fetch pending friend request count
+            val pendingRequestCount = repository.getPendingFriendRequests(userId).size
 
             runOnUiThread {
                 if (user == null) {
@@ -100,6 +119,14 @@ class ProfileActivity : AppCompatActivity() {
                 profileLocation.text = user.location?.takeIf { it.isNotBlank() } ?: "Not set"
                 clubsCount.text = ownedClubCount.toString()
                 eventsCount.text = userEventCount.toString()
+
+                // NEW: Update network button text
+                val requestsText = if (pendingRequestCount == 0) {
+                    "(No Requests)"
+                } else {
+                    "($pendingRequestCount Pending)"
+                }
+                viewNetworkBtn.text = "View Network $requestsText"
 
                 if (!profileImagePath.isNullOrEmpty()) {
                     val bitmap = BitmapFactory.decodeFile(profileImagePath)

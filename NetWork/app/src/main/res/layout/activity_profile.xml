@@ -144,10 +144,33 @@
             </LinearLayout>
         </LinearLayout>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/viewNetworkBtn"
+            android:layout_marginTop="24dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Network (0 Requests)"
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#03DAC5"
+            android:textColor="#212121"/>
+
+        <!-- Add Friend Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addFriendBtn"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+ ADD FRIEND"
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#FF9800"
+            android:textColor="#FFFFFF"/>
+
         <!-- Buttons -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/editProfileBtn"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="12dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Edit Profile"

@@ -70,6 +70,12 @@
         <activity android:name=".EventDetailsActivity"
             android:exported="false"
             android:label="Event Details"/>
+        <activity android:name=".FriendsActivity"
+            android:exported="false"
+            android:label="Friend Requests "/>
+        <activity android:name=".AddFriendActivity"
+            android:exported="false"
+            android:label="Friends Management"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD9Cn3vAe3_1ZoBK_SWTFxdwogZTiJG3SA" />

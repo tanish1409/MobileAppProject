@@ -85,6 +85,30 @@ class DatabaseRepository(context: Context) {
         }
     }
 
+    // Search by email first; if not found, fall back to exact name match
+    fun getUserByEmailOrName(query: String): User? {
+        // Try email
+        getUserByEmail(query)?.let { return it }
+
+        // Try exact name match (case-insensitive)
+        val cursor = db.query(
+            "Users",
+            null,
+            "LOWER(name) = LOWER(?)",
+            arrayOf(query),
+            null, null, null
+        )
+
+        return if (cursor.moveToFirst()) {
+            val user = cursorToUser(cursor)
+            cursor.close()
+            user
+        } else {
+            cursor.close()
+            null
+        }
+    }
+
     fun updateUserProfile(userId: Int, name: String?, bio: String?, location: String?, preferences: String?): Boolean {
         val values = ContentValues().apply {
             name?.let { put("name", it) }
@@ -677,28 +701,76 @@ class DatabaseRepository(context: Context) {
     // ============================================
 
     fun sendFriendRequest(userId: Int, friendId: Int): Boolean {
+        if (userId == friendId) return false
+
+        // Already friends?
+        if (areFriends(userId, friendId)) return false
+
+        // Existing pending either direction?
+        if (hasPendingFriendRequest(userId, friendId)) return false
+
         val values = ContentValues().apply {
             put("user_id", userId)
             put("friend_id", friendId)
             put("status", "pending")
         }
-        return db.insertWithOnConflict("Friends", null, values,
-            SQLiteDatabase.CONFLICT_REPLACE) != -1L
+
+        return db.insert("Friends", null, values) != -1L
     }
 
-    fun acceptFriendRequest(userId: Int, friendId: Int): Boolean {
-        val values = ContentValues().apply {
-            put("status", "accepted")
+    fun acceptFriendRequest(senderId: Int, receiverId: Int): Boolean {
+        db.beginTransaction()
+        return try {
+            // 1) Update SENDER -> RECEIVER to accepted
+            val values = ContentValues().apply {
+                put("status", "accepted")
+            }
+
+            val whereArgs = arrayOf(senderId.toString(), receiverId.toString(), "pending")
+            val rowsUpdated = db.update(
+                "Friends",
+                values,
+                "user_id = ? AND friend_id = ? AND status = ?",
+                whereArgs
+            )
+
+            if (rowsUpdated <= 0) {
+                db.endTransaction()
+                return false
+            }
+
+            // 2) Insert RECEIVER -> SENDER as accepted if not already there
+            val reverseValues = ContentValues().apply {
+                put("user_id", receiverId)
+                put("friend_id", senderId)
+                put("status", "accepted")
+            }
+
+            db.insertWithOnConflict(
+                "Friends",
+                null,
+                reverseValues,
+                SQLiteDatabase.CONFLICT_IGNORE
+            )
+
+            db.setTransactionSuccessful()
+            true
+        } finally {
+            db.endTransaction()
         }
-        return db.update("Friends", values,
-            "user_id = ? AND friend_id = ?",
-            arrayOf(friendId.toString(), userId.toString())) > 0
     }
 
-    fun rejectFriendRequest(userId: Int, friendId: Int): Boolean {
-        return db.delete("Friends",
-            "user_id = ? AND friend_id = ?",
-            arrayOf(friendId.toString(), userId.toString())) > 0
+    /**
+     * Rejects a friend request by deleting the pending row.
+     * Note: SENDER ID is the user who sent the request.
+     * RECEIVER ID is the current user (the one rejecting).
+     */
+    fun rejectFriendRequest(senderId: Int, receiverId: Int): Boolean {
+        return db.delete(
+            "Friends",
+            "user_id = ? AND friend_id = ? AND status = ?",
+            arrayOf(senderId.toString(), receiverId.toString(), "pending")
+        ) > 0
     }
 
     fun getFriends(userId: Int): List<Friend> {
@@ -731,6 +803,24 @@ class DatabaseRepository(context: Context) {
         }
         cursor.close()
         return requests
+    }
+
+    fun hasPendingFriendRequest(userId: Int, friendId: Int): Boolean {
+        val cursor = db.query(
+            "Friends",
+            arrayOf("status"),
+            "((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status = ?",
+            arrayOf(
+                userId.toString(), friendId.toString(),
+                friendId.toString(), userId.toString(),
+                "pending"
+            ),
+            null, null, null
+        )
+
+        val hasPending = cursor.moveToFirst()
+        cursor.close()
+        return hasPending
     }
 
     fun areFriends(userId: Int, friendId: Int): Boolean {
