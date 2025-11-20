@@ -74,7 +74,7 @@ class MediaAdapter(
     private fun resolveUri(context: android.content.Context, url: String): Uri {
         return FileProvider.getUriForFile(
             context,
-            context.packageName + ".fileprovider",
+            "${context.packageName}.provider",
             File(url)
         )
     }
