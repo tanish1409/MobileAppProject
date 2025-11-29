@@ -80,7 +80,7 @@ class AddFriendActivity : AppCompatActivity() {
                 return@Thread
             }
 
-            // 3. Already friends?
+            // 3. Already friends check
             if (repository.areFriends(currentUserId, targetUserId)) {
                 runOnUiThread {
                     Toast.makeText(

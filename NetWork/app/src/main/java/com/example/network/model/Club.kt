@@ -7,7 +7,7 @@ data class Club(
     val sportType: String,
     val locationLat: Double,
     val locationLong: Double,
-    val locationAddress: String? = null, // Human-readable address
+    val locationAddress: String? = null,
     val ownerId: Int,
     val memberCount: Int = 0,
     val rating: Float = 0f,

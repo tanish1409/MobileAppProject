@@ -38,12 +38,10 @@ import androidx.annotation.DrawableRes
 class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
 
     private lateinit var mMap: GoogleMap
-    private lateinit var sessionManager: SessionManager // NEW
-    private var userId: Int = -1 // NEW
+    private lateinit var sessionManager: SessionManager
+    private var userId: Int = -1
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
-    private var selectedFilter: String = "All" // RENAMED from selectedSport
-
-    // --- SENSOR PROPERTIES ---
+    private var selectedFilter: String = "All"
     private lateinit var mSensorManager: SensorManager
     private lateinit var mAccelerometer: Sensor
     private lateinit var mShakeDetector: ShakeDetector
@@ -57,7 +55,6 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
         sessionManager = SessionManager(this) // NEW
         userId = sessionManager.getUserId() // NEW
 
-        // --- SENSOR SETUP (SAFE TO CALL HERE) ---
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!!
         mShakeDetector = ShakeDetector(this)
@@ -154,7 +151,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
         activeMarkers.clear()
         googleMap.clear()
 
-        // --- NEW FILTERING LOGIC ---
+        // --- FILTERING LOGIC ---
         val clubs = when (selectedFilter) {
             "My Clubs" -> {
                 if (userId != -1) repo.getClubsOwnedByUser(userId) else emptyList()
@@ -172,7 +169,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, OnShakeListener {
                 }
             }
         }
-        // --- END NEW FILTERING LOGIC ---
+        // --- END FILTERING LOGIC ---
 
         clubs.forEach { club ->
             val position = LatLng(club.locationLat, club.locationLong)

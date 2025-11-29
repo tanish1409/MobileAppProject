@@ -42,7 +42,6 @@ class ReviewAdapter(
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
         val review = reviews[position]
 
-        // This uses the correct property names from your Review model
         holder.userName.text = review.userName
         holder.ratingBar.rating = review.rating.toFloat()
 
@@ -52,9 +51,6 @@ class ReviewAdapter(
             holder.reviewText.visibility = View.VISIBLE
             holder.reviewText.text = review.text
         }
-
-        // Media (image or video)
-        // Inside ReviewAdapter.kt, replacing the media section of onBindViewHolder
 
         // Determine if the URL points to a Voice Note (e.g., .mp3 or .m4a)
         val isVoiceNote = review.mediaUrl.isNullOrEmpty().not() &&
@@ -80,8 +76,6 @@ class ReviewAdapter(
             // --- VOICE NOTE LOGIC ---
             holder.mediaImage.visibility = View.GONE
             holder.audioContainer.visibility = View.VISIBLE
-            // OPTIONAL: Hide comment if voice note is attached, uncomment if desired:
-            // holder.reviewText.visibility = View.GONE
 
             // Set icon based on playback state
             holder.audioPlayPauseIcon.setImageResource(

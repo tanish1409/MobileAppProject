@@ -85,10 +85,10 @@ class ClubListActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        // 1. Text Search Listener (Existing)
+        // 1. Text Search Listener
         searchField.addTextChangedListener(searchTextWatcher)
 
-        // 2. Toggle Listener (NEW)
+        // 2. Toggle Listener
         locationSearchToggle.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 // Show radius input and check permissions
@@ -102,7 +102,7 @@ class ClubListActivity : AppCompatActivity() {
             }
         }
 
-        // 3. Create and Back Buttons (Existing)
+        // 3. Create and Back Buttons
         findViewById<Button>(R.id.createClubBtn).setOnClickListener {
             startActivity(Intent(this, CreateClubActivity::class.java))
         }
@@ -111,7 +111,7 @@ class ClubListActivity : AppCompatActivity() {
             finish()
         }
 
-        // 4. Radius Field Listener (NEW) - To trigger search when radius changes
+        // 4. Radius Field Listener - To trigger search when radius changes
         radiusField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -169,7 +169,6 @@ class ClubListActivity : AppCompatActivity() {
             }
     }
 
-    // --- UPDATED CLUB LOADING LOGIC ---
 
     private fun loadClubs(query: String) {
         // Get user inputs, safely handling nulls/empties

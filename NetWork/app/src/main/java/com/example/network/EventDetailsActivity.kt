@@ -78,7 +78,7 @@ class EventDetailsActivity : AppCompatActivity() {
                     if (success) {
                         Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show()
 
-                        // ⭐ IMPORTANT: Tell ClubDetailsActivity to refresh
+                        // Tell ClubDetailsActivity to refresh
                         setResult(Activity.RESULT_OK)
 
                         finish()

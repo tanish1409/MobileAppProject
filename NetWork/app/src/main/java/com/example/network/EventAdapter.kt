@@ -43,7 +43,6 @@ class EventAdapter(
         holder.participantsText.text = "${event.currentParticipants}/${event.maxParticipants} participants"
 
         // --- JOIN/LEAVE LOGIC ---
-        // We use the checker function passed from the activity
         val isAttending = isUserAttendingChecker(event.eventId, userId)
 
         if (event.hostId == userId) {

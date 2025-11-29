@@ -234,8 +234,7 @@ class DatabaseRepository(context: Context) {
     }
 
     fun leaveClub(clubId: Int, userId: Int): Boolean {
-        // Prevent owner from leaving via this method (optional but good practice)
-        // Note: A more complex query could check for ownership first. For now, rely on UI check.
+        // Prevent owner from leaving via this method
         return db.delete(
             "Club_Membership",
             "club_id = ? AND user_id = ?",
@@ -278,8 +277,6 @@ class DatabaseRepository(context: Context) {
     fun getClubMembers(clubId: Int, ownerId: Int): List<User> {
         val members = mutableListOf<User>()
 
-        // We join Club_Membership with Users to get the member details.
-        // We exclude the owner_id to avoid confusion, as the owner is treated separately.
         val cursor = db.rawQuery(
             """
             SELECT U.* FROM Club_Membership CM
@@ -290,7 +287,6 @@ class DatabaseRepository(context: Context) {
             arrayOf(clubId.toString(), ownerId.toString())
         )
 
-        // Assuming you have a cursorToUser(cursor) helper function:
         while (cursor.moveToNext()) {
             members.add(cursorToUser(cursor))
         }
@@ -544,7 +540,6 @@ class DatabaseRepository(context: Context) {
             arrayOf(eventId.toString())
         )
 
-        // Assuming you have a cursorToUser(cursor) helper function that works for the User model
         while (cursor.moveToNext()) {
             attendees.add(cursorToUser(cursor))
         }
@@ -753,7 +748,6 @@ class DatabaseRepository(context: Context) {
     fun acceptFriendRequest(senderId: Int, receiverId: Int): Boolean {
         db.beginTransaction()
         return try {
-            // 1) Update SENDER -> RECEIVER to accepted
             val values = ContentValues().apply {
                 put("status", "accepted")
             }
@@ -771,7 +765,6 @@ class DatabaseRepository(context: Context) {
                 return false
             }
 
-            // 2) Insert RECEIVER -> SENDER as accepted if not already there
             val reverseValues = ContentValues().apply {
                 put("user_id", receiverId)
                 put("friend_id", senderId)
@@ -1009,7 +1002,6 @@ class DatabaseRepository(context: Context) {
         }
     }
 
-    //TODO: Fix event_id to become club_id
     fun getClubMediaWorkaround(clubId: Int): List<Media> {
         val mediaList = mutableListOf<Media>()
         val cursor = db.query(

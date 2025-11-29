@@ -326,7 +326,6 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun showChangePasswordDialog() {
         val dialog = Dialog(this)
-        // **NOTE**: You must create the layout resource file 'dialog_change_password' (Step 3)
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_change_password, null)
         dialog.setContentView(dialogView)
 
@@ -343,7 +342,7 @@ class EditProfileActivity : AppCompatActivity() {
             val newPassword = newPasswordField.text.toString()
             val confirmNewPassword = confirmNewPasswordField.text.toString()
 
-            // Client-Side Validation (simplified, use better validation methods)
+            // Client-Side Validation
             if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener

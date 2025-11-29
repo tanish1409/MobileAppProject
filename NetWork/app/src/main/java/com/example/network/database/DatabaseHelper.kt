@@ -139,16 +139,11 @@ class DatabaseHelper (context: Context) : SQLiteOpenHelper(
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         // Version 1 to 2 Upgrade: Added profile_image_path
         if (oldVersion < 2) {
-            // NOTE: The previous version (v1) code already handled this update:
             db.execSQL("ALTER TABLE Users ADD COLUMN profile_image_path TEXT")
-            // If your current DB version is 2, you don't need this, but for safety
-            // if oldVersion was 1, you'd execute the change to get to version 2.
         }
 
         // Version 2 to 3 Upgrade: Added Club_Membership table
         if (oldVersion < 3) {
-            // You only need to create the table here.
-            // The ALTER TABLE command for v2 (profile_image_path) should NOT be repeated here.
             db.execSQL(
                 """
                 CREATE TABLE IF NOT EXISTS Club_Membership (

@@ -57,7 +57,6 @@ class AddReviewActivity : AppCompatActivity() {
                     finish()
                 }
             }
-            // **FIX 3: Call performClick for accessibility**
             v.performClick()
             true
         }
@@ -84,7 +83,7 @@ class AddReviewActivity : AppCompatActivity() {
         }
 
         cancelButton.setOnClickListener {
-            finish() // Simply close the activity
+            finish()
         }
 
         recordButton.setOnClickListener {
@@ -122,9 +121,6 @@ class AddReviewActivity : AppCompatActivity() {
             Toast.makeText(this, "Failed to submit review.", Toast.LENGTH_SHORT).show()
         }
     }
-
-    // In AddReviewActivity.kt, add these new methods:
-
     // --- Permissions ---
     private fun checkPermissions(): Boolean {
         return ActivityCompat.checkSelfPermission(this, RECORD_PERMISSION) == PackageManager.PERMISSION_GRANTED

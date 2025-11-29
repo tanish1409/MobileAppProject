@@ -82,7 +82,6 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // NEW: Launch FriendsActivity
         viewNetworkBtn.setOnClickListener {
             val intent = Intent(this, FriendsActivity::class.java)
             startActivity(intent)
@@ -100,7 +99,6 @@ class ProfileActivity : AppCompatActivity() {
             val ownedClubCount = repository.getUserClubCount(userId)
             val userEventCount = repository.getUserEventCount(userId)
 
-            // NEW: Fetch pending friend request count
             val pendingRequestCount = repository.getPendingFriendRequests(userId).size
 
             runOnUiThread {
